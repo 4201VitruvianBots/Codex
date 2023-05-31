@@ -4,19 +4,17 @@
 
 package org.team4201.commands;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.junit.jupiter.api.BeforeEach;
-
 import java.util.Set;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
 
 /** Basic setup for all {@link Command tests}. */
 public class CommandTestBase {

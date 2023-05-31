@@ -25,8 +25,7 @@ public class CommandsTest extends CommandTestBase {
   // this method will run after each test. We need to close each subsystem properly, as they all get
   // separately initialized for each individual test, which will trip some errors due to how WPILib
   // is set up (e.g. resource errors from using the same PWM/DIO port)
-  void shutdown() throws Exception {
-  }
+  void shutdown() throws Exception {}
 
   // Mark all test functions with @Test
   @Test
