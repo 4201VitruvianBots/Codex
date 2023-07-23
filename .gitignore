@@ -27,3 +27,5 @@ build/
 .vscode/
 .wpilib/
 gradle/
+
+.idea/
