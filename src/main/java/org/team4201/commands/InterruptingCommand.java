@@ -1,7 +1,7 @@
 package org.team4201.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -12,7 +12,7 @@ import java.util.function.BooleanSupplier;
 // Who's there?
 // Interrupting command
 // Interrupting comma-
-public class InterruptingCommand extends CommandBase {
+public class InterruptingCommand extends Command {
   private final Command m_interruptible;
   private final Command m_interrupt;
   private Command m_selectedCommand;
@@ -26,12 +26,12 @@ public class InterruptingCommand extends CommandBase {
    * @param interrupt The command that interrupts the first command
    * @param condition When to interrupt the first command
    */
-  public InterruptingCommand(Command interruptible, Command interrupt, BooleanSupplier condition) {
-    m_interruptible = interruptible;
+  public InterruptingCommand(Command interruptable, Command interrupt, BooleanSupplier condition) {
+    m_interruptible = interruptable;
     m_interrupt = interrupt;
     m_condition = condition;
-    m_requirements.addAll(interruptible.getRequirements());
-    m_requirements.addAll(interrupt.getRequirements());
+    addRequirements(interruptable.getRequirements());
+    addRequirements(interrupt.getRequirements());
   }
 
   @Override

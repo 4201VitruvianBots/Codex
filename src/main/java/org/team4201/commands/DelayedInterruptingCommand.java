@@ -2,7 +2,6 @@ package org.team4201.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -13,8 +12,8 @@ import java.util.function.BooleanSupplier;
 // Who's there?
 // Interrupting command
 // Interrupting comma-
-public class DelayedInterruptingCommand extends CommandBase {
-  private final Command m_interruptible;
+public class DelayedInterruptingCommand extends Command {
+  private final Command m_interruptable;
   private final Command m_interrupt;
   private Command m_selectedCommand;
 
@@ -27,24 +26,24 @@ public class DelayedInterruptingCommand extends CommandBase {
   /**
    * Runs a command until a condition is met, then interrupts it to run another command
    *
-   * @param interruptible The command to run initially that will be interrupted
+   * @param interruptable The command to run initially that will be interrupted
    * @param interrupt The command that interrupts the first command
    * @param condition When to interrupt the first command
    */
   public DelayedInterruptingCommand(
-      Command interruptible, Command interrupt, double delay, BooleanSupplier condition) {
-    m_interruptible = interruptible;
+      Command interruptable, Command interrupt, double delay, BooleanSupplier condition) {
+    m_interruptable = interruptable;
     m_interrupt = interrupt;
     m_delay = delay;
     m_condition = condition;
-    m_requirements.addAll(interruptible.getRequirements());
-    m_requirements.addAll(interrupt.getRequirements());
+    addRequirements(interruptable.getRequirements());
+    addRequirements(interrupt.getRequirements());
   }
 
   @Override
   public void initialize() {
     hasInterrupted = false;
-    m_selectedCommand = m_interruptible;
+    m_selectedCommand = m_interruptable;
     m_selectedCommand.initialize();
     m_timer.reset();
     m_timer.start();
