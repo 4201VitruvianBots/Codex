@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "maven-publish"
     id "edu.wpi.first.GradleRIO" version "2025.1.1"
 }
 
@@ -103,3 +104,7 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
+
+apply plugin: 'maven-publish'
+
+group = 'com.github.4201VitruvianBots'
