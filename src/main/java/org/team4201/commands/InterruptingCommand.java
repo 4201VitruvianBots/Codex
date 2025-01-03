@@ -1,7 +1,6 @@
 package org.team4201.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.BooleanSupplier;
 
 /**
