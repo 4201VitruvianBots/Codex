@@ -1,4 +1,4 @@
-package org.team4201;
+package org.team4201.codex;
 
 import java.lang.reflect.Field;
 

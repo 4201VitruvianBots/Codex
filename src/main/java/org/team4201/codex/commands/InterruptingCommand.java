@@ -1,4 +1,4 @@
-package org.team4201.commands;
+package org.team4201.codex.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.BooleanSupplier;
@@ -21,7 +21,7 @@ public class InterruptingCommand extends Command {
   /**
    * Runs a command until a condition is met, then interrupts it to run another command
    *
-   * @param interruptible The command to run initially that will be interrupted
+   * @param interruptable The command to run initially that will be interrupted
    * @param interrupt The command that interrupts the first command
    * @param condition When to interrupt the first command
    */

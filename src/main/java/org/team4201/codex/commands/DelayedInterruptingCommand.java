@@ -1,4 +1,4 @@
-package org.team4201.commands;
+package org.team4201.codex.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,6 +28,7 @@ public class DelayedInterruptingCommand extends Command {
    *
    * @param interruptable The command to run initially that will be interrupted
    * @param interrupt The command that interrupts the first command
+   * @param delay Time to delay before running the interrupt command (in seconds)
    * @param condition When to interrupt the first command
    */
   public DelayedInterruptingCommand(

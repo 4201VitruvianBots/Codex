@@ -1,4 +1,4 @@
-package org.team4201.simulation;
+package org.team4201.codex.simulation;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class to handle all updates to the Field2D widget
+ */
 public class FieldSim implements AutoCloseable, Subsystem {
     private final Field2d m_field2D = new Field2d();
 
@@ -21,22 +24,44 @@ public class FieldSim implements AutoCloseable, Subsystem {
             "modulePoses"
     };
 
+    /**
+     * Create a FieldSim object
+     */
     public FieldSim() {
         SmartDashboard.putData("Field2D", m_field2D);
     }
 
+    /**
+     * Add a pose to FieldSim to display
+     *
+     * @param key The name of the object (Must be unique)
+     * @param poses The poses corresponding to the object's position
+     */
     public void addPoses(String key, Pose2d... poses) {
         m_objectPoses.put(key, poses);
     }
 
+    /**
+     * Remove a pose from being displayed on FieldSim
+     *
+     * @param key The name of the object to remove
+     */
     public void removePoses(String key) {
         m_objectPoses.remove(key);
     }
 
+    /**
+     * Remove all poses from being displayed on FieldSim
+     */
     public void clearAllPoses() {
         m_objectPoses.clear();
     }
 
+    /**
+     * Add a trajectory to be displayed in the Field2D widget.
+     *
+     * @param trajectory The wpilib Trajectory to display
+     */
     public void addTrajectory(Trajectory trajectory) {
         m_field2D.getObject("path").setTrajectory(trajectory);
     }

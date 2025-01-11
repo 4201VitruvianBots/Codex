@@ -1,4 +1,4 @@
-package org.team4201.commands;
+package org.team4201.codex.commands;
 
 import static org.mockito.Mockito.*;
 

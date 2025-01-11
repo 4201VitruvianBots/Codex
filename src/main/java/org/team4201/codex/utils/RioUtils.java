@@ -1,6 +1,14 @@
-package org.team4201.utils;
+package org.team4201.codex.utils;
 
+/**
+ * Utility class for interfacing with the RoboRIO.
+ *
+ */
 public class RioUtils {
+    /**
+     * RoboRIO Serial Number.
+     *
+     */
     enum SERIAL_NUMBER {
         SIMULATION("");
         private final String serialNumber;
