@@ -29,6 +29,14 @@ public class FieldSim implements AutoCloseable, Subsystem {
         m_objectPoses.put(key, poses);
     }
 
+    public void removePoses(String key) {
+        m_objectPoses.remove(key);
+    }
+
+    public void clearAllPoses() {
+        m_objectPoses.clear();
+    }
+
     public void addTrajectory(Trajectory trajectory) {
         m_field2D.getObject("path").setTrajectory(trajectory);
     }
