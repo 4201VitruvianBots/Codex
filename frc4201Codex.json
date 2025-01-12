@@ -1,0 +1,29 @@
+{
+    "fileName": "frc4201Codex.json",
+    "name": "Codex",
+    "version": "2025.0.1",
+    "frcYear": "2025",
+    "uuid": "5db6a80c-246e-48c6-b629-798597b993e1",
+    "mavenUrls": [
+        "https://4201vitruvianbots.github.io/codex/repo"
+    ],
+    "jsonUrl": "https://4201vitruvianbots.github.io/codex/frc4201Codex.json",
+    "javaDependencies": [
+        {
+            "groupId": "org.team4201.codex",
+            "artifactId": "codex-java",
+            "version": "2025.0.1"
+        },
+        {
+            "groupId": "com.ctre.phoenix6",
+            "artifactId": "wpiapi-java",
+            "version": "25.1.0"
+        },
+        {
+            "groupId": "com.pathplanner.lib",
+            "artifactId": "PathplannerLib-java",
+            "version": "2025.1.1"
+        }
+    ],
+    "jniDependencies": []
+}

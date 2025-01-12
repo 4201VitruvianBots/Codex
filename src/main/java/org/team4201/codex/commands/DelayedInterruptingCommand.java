@@ -1,4 +1,4 @@
-package org.team4201.commands;
+package org.team4201.codex.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,7 +13,7 @@ import java.util.function.BooleanSupplier;
 // Interrupting command
 // Interrupting comma-
 public class DelayedInterruptingCommand extends Command {
-  private final Command m_interruptable;
+  private final Command m_interruptible;
   private final Command m_interrupt;
   private Command m_selectedCommand;
 
@@ -26,24 +26,25 @@ public class DelayedInterruptingCommand extends Command {
   /**
    * Runs a command until a condition is met, then interrupts it to run another command
    *
-   * @param interruptable The command to run initially that will be interrupted
+   * @param interruptible The command to run initially that will be interrupted
    * @param interrupt The command that interrupts the first command
+   * @param delay Time to delay before running the interrupt command (in seconds)
    * @param condition When to interrupt the first command
    */
   public DelayedInterruptingCommand(
-      Command interruptable, Command interrupt, double delay, BooleanSupplier condition) {
-    m_interruptable = interruptable;
+      Command interruptible, Command interrupt, double delay, BooleanSupplier condition) {
+    m_interruptible = interruptible;
     m_interrupt = interrupt;
     m_delay = delay;
     m_condition = condition;
-    addRequirements(interruptable.getRequirements());
+    addRequirements(interruptible.getRequirements());
     addRequirements(interrupt.getRequirements());
   }
 
   @Override
   public void initialize() {
     hasInterrupted = false;
-    m_selectedCommand = m_interruptable;
+    m_selectedCommand = m_interruptible;
     m_selectedCommand.initialize();
     m_timer.reset();
     m_timer.start();

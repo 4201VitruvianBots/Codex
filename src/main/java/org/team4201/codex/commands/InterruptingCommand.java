@@ -1,4 +1,4 @@
-package org.team4201.commands;
+package org.team4201.codex.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.BooleanSupplier;
@@ -25,11 +25,11 @@ public class InterruptingCommand extends Command {
    * @param interrupt The command that interrupts the first command
    * @param condition When to interrupt the first command
    */
-  public InterruptingCommand(Command interruptable, Command interrupt, BooleanSupplier condition) {
-    m_interruptible = interruptable;
+  public InterruptingCommand(Command interruptible, Command interrupt, BooleanSupplier condition) {
+    m_interruptible = interruptible;
     m_interrupt = interrupt;
     m_condition = condition;
-    addRequirements(interruptable.getRequirements());
+    addRequirements(interruptible.getRequirements());
     addRequirements(interrupt.getRequirements());
   }
 
