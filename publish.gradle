@@ -1,8 +1,13 @@
+import org.apache.tools.ant.filters.FixCrLfFilter
+import org.apache.tools.ant.filters.ReplaceTokens
+
 apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '2025.0.1'
+def templateVendorFile = "frc4201Codex.json"
+
+def pubVersion = '0.0.1'
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -42,9 +47,9 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archiveFile
 }
 
-def artifactGroupId = 'org.team4201'
+def artifactGroupId = 'com.team4201'
 def baseArtifactId = 'Codex'
-def javaBaseName = "_GROUP_com_team4201_ID_${baseArtifactId}-java_CLS"
+def javaBaseName = "_GROUP_team4201_ID_${baseArtifactId}-java_CLS"
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
@@ -76,6 +81,32 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
+// Apply template variables from the vendordep file.
+// Replaces ${VARIABLE} with VARIABLE: value in expand()
+task vendordepJson() {
+    description = 'Builds the vendordep json file.'
+    group = 'Build'
+    outputs.file("$buildDir/repos/$templateVendorFile")
+
+    copy {
+        from templateVendorFile
+        into "$buildDir/repos/"
+        expand(version: pubVersion,
+                groupId: artifactGroupId,
+                artifactId: baseArtifactId)
+    }
+}
+
+task vendordepJsonZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = "vendordepJson"
+
+    from("$buildDir/repos/$templateVendorFile") {
+        into '/'
+    }
+    dependsOn vendordepJson
+}
+
 artifacts {
     archives sourcesJar
     archives javadocJar
@@ -87,10 +118,12 @@ artifacts {
 addTaskToCopyAllOutputs(outputSourcesJar)
 addTaskToCopyAllOutputs(outputJavadocJar)
 addTaskToCopyAllOutputs(outputJar)
+addTaskToCopyAllOutputs(vendordepJsonZip)
 
 build.dependsOn outputSourcesJar
 build.dependsOn outputJavadocJar
 build.dependsOn outputJar
+build.dependsOn vendordepJsonZip
 
 libraryBuild.dependsOn build
 
@@ -120,6 +153,14 @@ model {
                 artifact javadocJar
 
                 artifactId = "${baseArtifactId}-java"
+                groupId artifactGroupId
+                version pubVersion
+            }
+
+            vendordep(MavenPublication) {
+                artifact vendordepJsonZip
+
+                artifactId = "${baseArtifactId}-vendordep"
                 groupId artifactGroupId
                 version pubVersion
             }

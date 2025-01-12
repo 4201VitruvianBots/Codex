@@ -1,39 +1,33 @@
-import edu.wpi.first.toolchain.*
-
 plugins {
-  id 'java'
-  id 'google-test'
-  id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2025.0'
-  id 'edu.wpi.first.NativeUtils' version '2025.9.0'
-  id 'edu.wpi.first.GradleJni' version '1.1.0'
-  id 'edu.wpi.first.GradleVsCode' version '2.1.0'
+    id "java"
+    id "google-test"
+    id "edu.wpi.first.GradleRIO" version "2025.1.1"
+    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2025.0"
 }
 
 // WPILib Version
 ext.wpilibVersion = "2025.+"
 
 repositories {
-  mavenCentral()
-  maven {
-      url = "https://maven.ctr-electronics.com/release/"
-  }
+    mavenCentral()
+    maven {
+        url = "https://maven.ctr-electronics.com/release/"
+    }
 }
 if (project.hasProperty('releaseMode')) {
-  wpilibRepositories.addAllReleaseRepositories(project)
+    wpilibRepositories.addAllReleaseRepositories(project)
 } else {
-  wpilibRepositories.addAllDevelopmentRepositories(project)
+    wpilibRepositories.addAllDevelopmentRepositories(project)
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 var javaVersion = "17"
 
-// Apply C++ configuration
-apply from: 'config.gradle'
-
-// Apply Java configuration
+// Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
+// Also defines JUnit 5.
 dependencies {
     implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
     implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
@@ -49,7 +43,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
     implementation 'edu.wpi.first.thirdparty.frc2025.opencv:opencv-java:4.10.0-2'
 
-    // Add dependencies from other vendordeps
+    // Add 3rdParty vendor libraries here
     implementation "edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:$wpilibVersion"
     implementation "com.ctre.phoenix6:wpiapi-java:25.1.0"
     implementation "com.pathplanner.lib:PathplannerLib-java:2025.1.1"
@@ -59,7 +53,6 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:4.1.0'
 }
 
-// Set up java tests
 test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
@@ -85,22 +78,8 @@ javadoc {
     }
 }
 
-// Set up exports properly
-nativeUtils {
-}
-
-ext.getCurrentArch = {
-    return NativePlatforms.desktop
-}
-
-def systemArch = getCurrentArch()
-
-model {
-
-}
-
 apply from: 'publish.gradle'
 
 wrapper {
-  gradleVersion '8.11'
+    gradleVersion '8.11'
 }
