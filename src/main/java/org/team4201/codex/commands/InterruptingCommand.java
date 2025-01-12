@@ -21,15 +21,15 @@ public class InterruptingCommand extends Command {
   /**
    * Runs a command until a condition is met, then interrupts it to run another command
    *
-   * @param interruptable The command to run initially that will be interrupted
+   * @param interruptible The command to run initially that will be interrupted
    * @param interrupt The command that interrupts the first command
    * @param condition When to interrupt the first command
    */
-  public InterruptingCommand(Command interruptable, Command interrupt, BooleanSupplier condition) {
-    m_interruptible = interruptable;
+  public InterruptingCommand(Command interruptible, Command interrupt, BooleanSupplier condition) {
+    m_interruptible = interruptible;
     m_interrupt = interrupt;
     m_condition = condition;
-    addRequirements(interruptable.getRequirements());
+    addRequirements(interruptible.getRequirements());
     addRequirements(interrupt.getRequirements());
   }
 

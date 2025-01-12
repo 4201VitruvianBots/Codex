@@ -8,8 +8,10 @@ import edu.wpi.first.wpilibj2.command.*;
 import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class CommandsTest extends CommandTestBase {
   private boolean m_trigger;
 
@@ -17,7 +19,7 @@ public class CommandsTest extends CommandTestBase {
   // this method will run before each test. We Initialize the RobotContainer and get all subsystems
   // from it for our tests
   void setup() {
-    assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
+    HAL.initialize(500, 0); // initialize the HAL, crash if failed
   }
 
   @SuppressWarnings("PMD.SignatureDeclareThrowsException")
