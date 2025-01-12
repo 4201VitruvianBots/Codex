@@ -96,7 +96,37 @@ ext.getCurrentArch = {
 def systemArch = getCurrentArch()
 
 model {
+    components {
+        Codex(NativeLibrarySpec) {
+            nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+        }
+//        Codex(JniNativeLibrarySpec) {
+//            enableCheckTask true
+//            javaCompileTasks << compileJava
+//            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.roborio)
+//            // Leave these for future proofing
+//            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm32)
+//            jniCrossCompileOptions << JniCrossCompileOptions(nativeUtils.wpi.platforms.linuxarm64)
+//
+//            nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+//        }
+    }
+    testSuites {
+        CodexTest {
+            binaries.all {
+                def arch = it.targetPlatform.name
+                if (systemArch == arch && it.buildType.name == 'debug') {
+                    def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                    test.dependsOn it.tasks.install
+                    test.systemProperty 'java.library.path', filePath
+                    test.environment 'LD_LIBRARY_PATH', filePath
+                    test.workingDir filePath
+                }
+            }
 
+            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
+        }
+    }
 }
 
 apply from: 'publish.gradle'
