@@ -16,10 +16,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 
 /** Basic setup for all {@link Command tests}. */
-@Disabled
 public class CommandTestBase {
   protected CommandTestBase() {}
 

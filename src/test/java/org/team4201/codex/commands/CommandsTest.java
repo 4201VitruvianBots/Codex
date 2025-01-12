@@ -8,10 +8,8 @@ import edu.wpi.first.wpilibj2.command.*;
 import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 public class CommandsTest extends CommandTestBase {
   private boolean m_trigger;
 
