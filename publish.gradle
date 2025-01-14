@@ -5,7 +5,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def templateVendorFile = "frc4201Codex.json"
+def vendordepFilename = "frc4201Codex.json"
 
 def pubVersion = '0.0.1'
 
@@ -86,25 +86,15 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
 task vendordepJson() {
     description = 'Builds the vendordep json file.'
     group = 'Build'
-    outputs.file("$buildDir/repos/$templateVendorFile")
+    outputs.file("codex/$vendordepFilename")
 
     copy {
-        from templateVendorFile
-        into "$buildDir/repos/"
+        from vendordepFilename
+        into "codex/"
         expand(version: pubVersion,
                 groupId: artifactGroupId,
                 artifactId: baseArtifactId)
     }
-}
-
-task vendordepJsonZip(type: Zip) {
-    destinationDirectory = outputsFolder
-    archiveBaseName = "frc4201Codex"
-
-    from("$buildDir/repos/$templateVendorFile") {
-        into '/'
-    }
-    dependsOn vendordepJson
 }
 
 artifacts {
@@ -123,7 +113,6 @@ addTaskToCopyAllOutputs(vendordepJsonZip)
 build.dependsOn outputSourcesJar
 build.dependsOn outputJavadocJar
 build.dependsOn outputJar
-build.dependsOn vendordepJsonZip
 
 libraryBuild.dependsOn build
 
