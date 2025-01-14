@@ -68,8 +68,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -86,10 +84,6 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build -Pbuildalldesktop
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: build/allOutputs
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -102,7 +96,7 @@ jobs:
     needs: [build-docker, build-host]
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repoo
+      - name: Checkout build-tools
         uses: actions/checkout@v4
         with:
           repository: wpilibsuite/build-tools
