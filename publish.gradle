@@ -9,7 +9,7 @@ def vendordepFilename = "frc4201Codex.json"
 
 def pubVersion = '0.0.1'
 
-def releasesRepoUrl = "codex/"
+def releasesRepoUrl = "Codex/repos"
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -88,11 +88,11 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
 task vendordepJson() {
     description = 'Builds the vendordep json file.'
     group = 'Build'
-    outputs.file("codex/$vendordepFilename")
+    outputs.file("Codex/vendordep/$vendordepFilename")
 
     copy {
         from vendordepFilename
-        into "codex/"
+        into "Codex/"
         expand(version: pubVersion,
                 groupId: artifactGroupId,
                 artifactId: baseArtifactId)
