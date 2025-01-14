@@ -103,7 +103,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Codex-json
-          path: public/frc4201Codex.json
+          path: frc4201Codex.json
 
   combine:
     name: Combine
