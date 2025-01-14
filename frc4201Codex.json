@@ -10,8 +10,8 @@
     "jsonUrl": "https://4201vitruvianbots.github.io/Codex/frc4201Codex.json",
     "javaDependencies": [
         {
-            "groupId": "org.team4201.codex",
-            "artifactId": "codex-java",
+            "groupId": "org.team4201",
+            "artifactId": "Codex-java",
             "version": "2025.0.1"
         }
     ],

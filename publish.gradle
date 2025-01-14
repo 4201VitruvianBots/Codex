@@ -9,7 +9,7 @@ def vendordepFilename = "frc4201Codex.json"
 
 def pubVersion = '2025.0.1'
 
-def releasesRepoUrl = "Codex/repos"
+def releasesRepoUrl = "public/repos"
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -49,7 +49,7 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archiveFile
 }
 
-def artifactGroupId = 'com.team4201'
+def artifactGroupId = 'org.team4201'
 def baseArtifactId = 'Codex'
 def javaBaseName = "_GROUP_team4201_ID_${baseArtifactId}-java_CLS"
 
@@ -88,11 +88,11 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
 task vendordepJson() {
     description = 'Builds the vendordep json file.'
     group = 'Build'
-    outputs.file("Codex/$vendordepFilename")
+    outputs.file("public/$vendordepFilename")
 
     copy {
         from vendordepFilename
-        into "Codex/"
+        into "public/"
         expand(version: pubVersion,
                 groupId: artifactGroupId,
                 artifactId: baseArtifactId)
