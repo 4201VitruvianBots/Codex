@@ -5,7 +5,7 @@
     "frcYear": "2025",
     "uuid": "5db6a80c-246e-48c6-b629-798597b993e1",
     "mavenUrls": [
-        "https://4201vitruvianbots.github.io/codex/repo"
+        "https://4201vitruvianbots.github.io/codex/repos"
     ],
     "jsonUrl": "https://4201vitruvianbots.github.io/codex/frc4201Codex.json",
     "javaDependencies": [

@@ -9,6 +9,8 @@ def vendordepFilename = "frc4201Codex.json"
 
 def pubVersion = '0.0.1'
 
+def releasesRepoUrl = "codex/"
+
 def outputsFolder = file("$buildDir/outputs")
 
 def versionFile = file("$outputsFolder/version.txt")
@@ -115,8 +117,6 @@ build.dependsOn outputJar
 
 libraryBuild.dependsOn build
 
-def releasesRepoUrl = "$buildDir/repos/releases"
-
 publishing {
     repositories {
         maven {
@@ -125,12 +125,6 @@ publishing {
         }
     }
 }
-
-task cleanReleaseRepo(type: Delete) {
-    delete releasesRepoUrl
-}
-
-tasks.matching {it != cleanReleaseRepo}.all {it.dependsOn cleanReleaseRepo}
 
 model {
     publishing {
