@@ -91,20 +91,6 @@ jobs:
           name: ${{ matrix.artifact-name }}
           path: build/allOutputs
 
-  vendordep:
-    name: Upload vendordep JSON
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          token: ${{secrets.GITHUB_TOKEN}}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Codex-json
-          path: frc4201Codex.json
-
   combine:
     name: Combine
     needs: [build-docker, build-host]
@@ -146,8 +132,8 @@ jobs:
       #     ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
       #     ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - name: Upload artifact
+      - name: Upload release
         uses: actions/upload-artifact@v4
         with:
           name: Codex-Maven
-          path: ~/releases
+          path: public
