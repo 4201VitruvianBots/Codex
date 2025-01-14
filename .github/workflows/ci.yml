@@ -1,6 +1,11 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build-docker:
@@ -68,7 +73,7 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        
+
       - name: Fetch all history and metadata
         run: git fetch --prune --unshallow
 
@@ -136,5 +141,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Maven
+          name: Codex-Maven
           path: ~/releases
