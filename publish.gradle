@@ -9,7 +9,7 @@ def vendordepFilename = "frc4201Codex.json"
 
 def pubVersion = '0.0.1'
 
-def releasesRepoUrl = "Codex/repos"
+def releasesRepoUrl = "repos"
 
 def outputsFolder = file("$buildDir/outputs")
 
