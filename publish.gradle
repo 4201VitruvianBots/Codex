@@ -7,7 +7,7 @@ ext.licenseFile = files("$rootDir/LICENSE.txt")
 
 def vendordepFilename = "frc4201Codex.json"
 
-def pubVersion = '0.0.1'
+def pubVersion = '2025.0.1'
 
 def releasesRepoUrl = "repos"
 
@@ -88,7 +88,7 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
 task vendordepJson() {
     description = 'Builds the vendordep json file.'
     group = 'Build'
-    outputs.file("Codex/vendordep/$vendordepFilename")
+    outputs.file("Codex/$vendordepFilename")
 
     copy {
         from vendordepFilename
