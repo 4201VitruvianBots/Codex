@@ -103,7 +103,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Codex-json
-          path: vendordep/frc4201Codex.json
+          path: frc4201Codex.json
 
   combine:
     name: Combine
@@ -121,12 +121,10 @@ jobs:
           path: combiner/products/build/allOutputs
 
       - name: Copy vendordep JSON
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          cp combiner/products/build/allOutputs/vendordep/frc4201Codex.json vendordep/frc4201Codex.json
+        run: cp combiner/products/build/allOutputs/frc4201Codex.json vendordep/frc4201Codex.json
 
       - name: Remove JSON Artifact From Download
-        run: rm combiner/products/build/allOutputs/vendordep/frc4201Codex.json
+        run: rm combiner/products/build/allOutputs/frc4201Codex.json
 
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
