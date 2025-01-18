@@ -134,8 +134,13 @@ jobs:
       #     ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
       #     ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+      - name: List artifacts
+        run: echo "Artifacts $(find ~/releases -type f)"
+
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Maven
           path: ~/releases
+          if-no-files-found: error
+          overwrite: true
