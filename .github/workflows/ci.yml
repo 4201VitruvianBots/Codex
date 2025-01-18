@@ -68,6 +68,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -132,8 +134,8 @@ jobs:
       #     ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
       #     ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - name: Upload release
+      - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Maven
-          path: ~/release
+          path: ~/releases
