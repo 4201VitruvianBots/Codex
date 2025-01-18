@@ -141,7 +141,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Codex-json
-          path: frc4201Codex.json
+          path: public/frc4201Codex.json
+          if-no-files-found: error
+          overwrite: true
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
