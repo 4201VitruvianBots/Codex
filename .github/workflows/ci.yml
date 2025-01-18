@@ -137,14 +137,14 @@ jobs:
       - name: List artifacts
         run: echo "Artifacts $(find ~/releases -type f)"
 
-      - name: List Home Dir
-        run: echo "Home Dir $(ls -lrt ~/)}"
+      - name: List Work Dir
+        run: echo "Home Dir $(ls -lrt work/)"
 
       - name: Upload vendordep
         uses: actions/upload-artifact@v4
         with:
           name: Codex-json
-          path: ~/work/Codex/public/frc4201Codex.json
+          path: ~/work/Codex/Codex/public/frc4201Codex.json
           if-no-files-found: error
           overwrite: true
 
