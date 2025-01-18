@@ -137,8 +137,9 @@ jobs:
       - name: List artifacts
         run: echo "Artifacts $(find ~/releases -type f)"
 
-      - name: List Work Dir
-        run: echo "Home Dir $(ls -lrt work/)"
+      - name: Find vendordep location
+        run: echo "Vendordep location $(find ~/ -iname 'frc4201Codex.json')"
+      #  run: echo "Home Dir $(ls -lrt ~/work/*/)"
 
       - name: Upload vendordep
         uses: actions/upload-artifact@v4
