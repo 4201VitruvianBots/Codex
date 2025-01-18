@@ -137,6 +137,9 @@ jobs:
       - name: List artifacts
         run: echo "Artifacts $(find ~/releases -type f)"
 
+      - name: List Home Dir
+        run: echo "Home Dir $(ls -lrt ~/)}"
+
       - name: Upload vendordep
         uses: actions/upload-artifact@v4
         with:
