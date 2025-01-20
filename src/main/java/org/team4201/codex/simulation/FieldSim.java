@@ -17,7 +17,8 @@ import java.util.Map;
 public class FieldSim implements AutoCloseable, Subsystem {
     private final Field2d m_field2D = new Field2d();
 
-    private Map<String, Pose2d[]> m_objectPoses = new HashMap<>();
+    private Map<String, Pose2d[]> m_staticObjectPoses = new HashMap<>();
+    private Map<String, Pose2d[]> m_dynamicObjectPoses = new HashMap<>();
 
     private String[] m_protectedKeys = {
             "robotPose",
@@ -31,6 +32,20 @@ public class FieldSim implements AutoCloseable, Subsystem {
         SmartDashboard.putData("Field2D", m_field2D);
     }
 
+
+    /**
+     * Add a static pose to FieldSim.
+     *
+     * @param key The name of the object (Must be unique)
+     * @param poses The poses corresponding to the object's position
+     */
+    public void addStaticPoses(String key, Pose2d... poses) {
+        if(m_dynamicObjectPoses.containsKey(key))
+            throw new IllegalArgumentException("Key '" + key + "' is already used for a dynamic pose!");
+        m_staticObjectPoses.put(key, poses);
+        m_field2D.getObject(key).setPoses(poses);
+    }
+
     /**
      * Add a pose to FieldSim to display
      *
@@ -38,7 +53,9 @@ public class FieldSim implements AutoCloseable, Subsystem {
      * @param poses The poses corresponding to the object's position
      */
     public void addPoses(String key, Pose2d... poses) {
-        m_objectPoses.put(key, poses);
+        if(m_staticObjectPoses.containsKey(key))
+            throw new IllegalArgumentException("Key '" + key + "' is already used for a static pose!");
+        m_dynamicObjectPoses.put(key, poses);
     }
 
     /**
@@ -47,14 +64,19 @@ public class FieldSim implements AutoCloseable, Subsystem {
      * @param key The name of the object to remove
      */
     public void removePoses(String key) {
-        m_objectPoses.remove(key);
+        m_staticObjectPoses.remove(key);
+        m_dynamicObjectPoses.remove(key);
+        m_field2D.getObject(key).close();
     }
 
     /**
      * Remove all poses from being displayed on FieldSim
      */
     public void clearAllPoses() {
-        m_objectPoses.clear();
+        for (var entry: m_dynamicObjectPoses.entrySet()) {
+            m_field2D.getObject(entry.getKey()).close();
+        }
+        m_dynamicObjectPoses.clear();
     }
 
     /**
@@ -67,9 +89,9 @@ public class FieldSim implements AutoCloseable, Subsystem {
     }
 
     private void updateField2d() {
-        m_field2D.setRobotPose(m_objectPoses.get("robotPose")[0]);
+        m_field2D.setRobotPose(m_dynamicObjectPoses.get("robotPose")[0]);
 
-        for (var entry:m_objectPoses.entrySet()) {
+        for (var entry: m_dynamicObjectPoses.entrySet()) {
             if (Arrays.asList(m_protectedKeys).contains(entry.getKey())) {
                 continue;
             }
@@ -77,7 +99,7 @@ public class FieldSim implements AutoCloseable, Subsystem {
         }
 
         if (RobotBase.isSimulation()) {
-            m_field2D.getObject("Swerve Modules").setPoses(m_objectPoses.get("modulePoses"));
+            m_field2D.getObject("Swerve Modules").setPoses(m_dynamicObjectPoses.get("modulePoses"));
         }
     }
 
