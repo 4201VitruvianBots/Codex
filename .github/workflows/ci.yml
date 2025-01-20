@@ -137,15 +137,16 @@ jobs:
       - name: List artifacts
         run: echo "Artifacts $(find ~/releases -type f)"
 
+      # This should be located at /home/runner/work/Codex/Codex/public/frc4201Codex.json
       - name: Find vendordep location
-        run: echo "Vendordep location $(find ~/ -iname 'frc4201Codex.json')"
+        run: echo "Vendordep location $(find /home/runner/work -name 'frc4201Codex.json')"
       #  run: echo "Home Dir $(ls -lrt ~/work/*/)"
 
       - name: Upload vendordep
         uses: actions/upload-artifact@v4
         with:
           name: Codex-json
-          path: ~/work/Codex/Codex/public/frc4201Codex.json
+          path: /home/runner/work/Codex/Codex/public/frc4201Codex.json
           if-no-files-found: error
           overwrite: true
 
