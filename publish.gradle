@@ -113,6 +113,7 @@ publish.dependsOn copyAllOutputs
 addTaskToCopyAllOutputs(outputSourcesJar)
 addTaskToCopyAllOutputs(outputJavadocJar)
 addTaskToCopyAllOutputs(outputJar)
+addTaskToCopyAllOutputs(vendordepJson)
 
 build.dependsOn outputSourcesJar
 build.dependsOn outputJavadocJar
