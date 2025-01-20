@@ -7,7 +7,7 @@ ext.licenseFile = files("$rootDir/LICENSE.txt")
 
 def pubVersion = '2025.0.1'
 
-def releasesRepoUrl = "public/repos"
+def releasesRepoUrl = "$rootDir/../vendordep/repos/releases"
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -90,7 +90,7 @@ task vendordepJson() {
 
     copy {
         from "frc4201Codex.json"
-        into "public/"
+        into "$rootDir/../vendordep"
         expand(version: pubVersion,
                 groupId: artifactGroupId,
                 artifactId: baseArtifactId)
@@ -104,6 +104,11 @@ artifacts {
     archives outputSourcesJar
     archives outputJavadocJar
 }
+
+publish.dependsOn outputJar
+publish.dependsOn outputSourcesJar
+publish.dependsOn outputJavadocJar
+publish.dependsOn copyAllOutputs
 
 addTaskToCopyAllOutputs(outputSourcesJar)
 addTaskToCopyAllOutputs(outputJavadocJar)
