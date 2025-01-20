@@ -21,11 +21,6 @@ nativeUtils.wpi.addWarningsAsErrors()
 
 nativeUtils.setSinglePrintPerPlatform()
 
-nativeUtils.wpi.addVendorDeps()
-nativeUtils.wpi.getVendorDeps().loadAll()
-nativeUtils.wpi.getVendorDeps().getNativeVendor().initializeNativeDependencies()
-nativeUtils.wpi.getVendorDeps().addVendorReposToMaven(false)
-
 model {
     // Uncomment this, and remove lines below it to enable builds for just roborio
     // components {
