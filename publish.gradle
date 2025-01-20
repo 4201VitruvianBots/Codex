@@ -83,18 +83,12 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
 
 // Apply template variables from the vendordep file.
 // Replaces ${VARIABLE} with VARIABLE: value in expand()
-task vendordepJson() {
-    description = 'Builds the vendordep json file.'
-    group = 'Build'
-    outputs.file("public/frc4201Codex.json")
-
-    copy {
-        from "frc4201Codex.json"
-        into "$rootDir/../vendordep"
-        expand(version: pubVersion,
-                groupId: artifactGroupId,
-                artifactId: baseArtifactId)
-    }
+copy {
+    from "frc4201Codex.json"
+    into "$rootDir/../vendordep"
+    expand(version: pubVersion,
+            groupId: artifactGroupId,
+            artifactId: baseArtifactId)
 }
 
 artifacts {
@@ -113,7 +107,6 @@ publish.dependsOn copyAllOutputs
 addTaskToCopyAllOutputs(outputSourcesJar)
 addTaskToCopyAllOutputs(outputJavadocJar)
 addTaskToCopyAllOutputs(outputJar)
-addTaskToCopyAllOutputs(vendordepJson)
 
 build.dependsOn outputSourcesJar
 build.dependsOn outputJavadocJar
