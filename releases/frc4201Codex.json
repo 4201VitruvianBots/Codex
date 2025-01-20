@@ -7,7 +7,7 @@
     "mavenUrls": [
         "https://4201vitruvianbots.github.io/Codex/releases/repos"
     ],
-    "jsonUrl": "https://4201vitruvianbots.github.io/releases/frc4201Codex.json",
+    "jsonUrl": "https://4201vitruvianbots.github.io/Codex/releases/frc4201Codex.json",
     "javaDependencies": [
         {
             "groupId": "org.team4201",
