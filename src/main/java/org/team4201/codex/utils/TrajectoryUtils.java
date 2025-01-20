@@ -45,13 +45,12 @@ public class TrajectoryUtils {
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param pathName The name of the PathPlanner Trajectory file to reference.
-   * @param maxSpeed The robot's max speed to obey (Overrides the setting in the PathPlanner trajectory file)
    *
    * @return Command
    */
-  public Command generatePPHolonomicCommand(String pathName, double maxSpeed) {
+  public Command generatePPHolonomicCommand(String pathName) {
     try {
-     return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), maxSpeed, false);
+     return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), m_robotConfig, false);
     } catch (Exception e) {
       DriverStation.reportError("Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(), e.getStackTrace());
       return new WaitCommand(0);
@@ -62,14 +61,13 @@ public class TrajectoryUtils {
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param pathName The name of the PathPlanner Trajectory file to reference.
-   * @param maxSpeed The robot's max speed to obey (Overrides the setting in the PathPlanner trajectory file)
    * @param manualFlip Option to manually flip the trajectory instead of using the robot's current {@link DriverStation.Alliance} color
    *
    * @return Command
    */
-  public Command generatePPHolonomicCommand(String pathName, double maxSpeed, boolean manualFlip) {
+  public Command generatePPHolonomicCommand(String pathName, boolean manualFlip) {
     try {
-      return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), maxSpeed, manualFlip);
+      return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), m_robotConfig, manualFlip);
     } catch (Exception e) {
         DriverStation.reportError("Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(), e.getStackTrace());
         return new WaitCommand(0);
@@ -80,43 +78,28 @@ public class TrajectoryUtils {
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param path The {@link PathPlannerPath} to follow.
-   * @param maxSpeed The robot's max speed to obey (Overrides the setting in the PathPlanner trajectory file)
+   * @param robotConfig The {@link RobotConfig} to use.
    *
    * @return Command
    */
-  public Command generatePPHolonomicCommand(PathPlannerPath path, double maxSpeed) {
+  public Command generatePPHolonomicCommand(PathPlannerPath path, RobotConfig robotConfig) {
 
-    return generatePPHolonomicCommand(path, maxSpeed, false);
+    return generatePPHolonomicCommand(path, robotConfig, false);
   }
 
   /**
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param path The {@link PathPlannerPath} to follow.
-   * @param maxSpeed The robot's max speed to obey (Overrides the setting in the PathPlanner trajectory file)
+   * @param robotConfig The {@link RobotConfig} to use
    * @param flipPath Option to flip the trajectory around the field's center.
    *
    * @return Command
    */
   public Command generatePPHolonomicCommand(
       PathPlannerPath path,
-      double maxSpeed,
+      RobotConfig robotConfig,
       boolean flipPath) {
-
-    RobotConfig robotConfig = m_robotConfig;
-    if (maxSpeed != 0) {
-      ModuleConfig moduleConfig =
-              new ModuleConfig(m_robotConfig.moduleConfig.wheelRadiusMeters,
-                      maxSpeed,
-                      m_robotConfig.moduleConfig.wheelCOF,
-                      m_robotConfig.moduleConfig.driveMotor,
-                      m_robotConfig.moduleConfig.driveCurrentLimit,
-                      m_robotConfig.moduleConfig.
-                      driveCurrentLimit,
-                      1);
-      robotConfig = new RobotConfig(m_robotConfig.massKG, m_robotConfig.MOI, moduleConfig, m_robotConfig.moduleLocations);
-    }
-
     return new FollowPathCommand(
         path,
         () -> m_swerveDrive.getState().Pose,
