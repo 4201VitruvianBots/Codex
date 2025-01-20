@@ -1,7 +1,7 @@
 {
     "fileName": "frc4201Codex.json",
     "name": "Codex-java",
-    "version": "${version}",
+    "version": "2025.0.1",
     "frcYear": "2025",
     "uuid": "5db6a80c-246e-48c6-b629-798597b993e1",
     "mavenUrls": [
@@ -10,9 +10,9 @@
     "jsonUrl": "https://4201vitruvianbots.github.io/releases/frc4201Codex.json",
     "javaDependencies": [
         {
-            "groupId": "${groupId}",
-            "artifactId": "${artifactId}-java",
-            "version": "${version}"
+            "groupId": "org.team4201",
+            "artifactId": "Codex-java",
+            "version": "2025.0.1"
         }
     ],
     "requires": [

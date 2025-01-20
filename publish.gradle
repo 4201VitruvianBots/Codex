@@ -7,7 +7,7 @@ ext.licenseFile = files("$rootDir/LICENSE.txt")
 
 def pubVersion = '2025.0.1'
 
-def releasesRepoUrl = "$buildDir/../vendordep/repos/releases"
+def releasesRepoUrl = "$buildDir/../releases/repos"
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -85,7 +85,7 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
 // Replaces ${VARIABLE} with VARIABLE: value in expand()
 copy {
     from "frc4201Codex.json"
-    into "$buildDir/../vendordep"
+    into "$buildDir/../releases"
     expand(version: pubVersion,
             groupId: artifactGroupId,
             artifactId: baseArtifactId)
