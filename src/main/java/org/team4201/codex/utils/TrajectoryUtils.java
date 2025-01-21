@@ -10,8 +10,11 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.config.PIDConstants;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -141,29 +144,14 @@ public class TrajectoryUtils {
    * @return {@link Trajectory}
    */
   public Trajectory getTrajectoryFromPathPlanner(boolean flipPath, PathPlannerPath... paths) {
-    var pathPoints = new ArrayList<Trajectory.State>();
+    var pathPoses = new ArrayList<Pose2d>();
 
     for (var path : paths) {
       if (flipPath) {
         path = path.flipPath();
       }
-
-      var trajectory = path.getIdealTrajectory(m_robotConfig);
-      trajectory.ifPresent(t-> {
-        pathPoints.addAll(t.getStates().stream()
-                .map(
-                        (state) ->
-                                new Trajectory.State(
-                                        state.timeSeconds,
-                                        state.linearVelocity,
-                                        0,
-                                        state.pose,
-                                        0))
-                .toList());
-
-      });
+      pathPoses.addAll(path.getPathPoses());
     }
-
-    return new Trajectory(pathPoints);
+    return TrajectoryGenerator.generateTrajectory(pathPoses, new TrajectoryConfig(1, 1));
   }
 }
