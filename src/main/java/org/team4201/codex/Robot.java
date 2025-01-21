@@ -1,8 +1,8 @@
 package org.team4201.codex;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,7 +21,7 @@ public class Robot extends TimedRobot {
      */
     public Robot() {
         if (RobotBase.isReal()) {
-          DriverStation.reportError("Codex should not be run as robot code!");
+          DriverStation.reportError("Codex should not be run as robot code!", false);
           throw new RuntimeException("Codex is run as robot code!");
         }
     }
