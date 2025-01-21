@@ -18,7 +18,10 @@ public class Robot extends TimedRobot {
      * initialization code.
      */
     public Robot() {
-
+        if (RobotBase.isReal()) {
+          DriverStation.reportError("Codex should not be run as robot code!");
+          throw new RuntimeException("Codex is run as robot code!");
+        }
     }
 
     /**
