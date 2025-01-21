@@ -107,7 +107,7 @@ public class TrajectoryUtils {
     return new FollowPathCommand(
         path,
         () -> m_swerveDrive.getState().Pose,
-            m_swerveDrive::getChassisSpeeds,
+            ()-> m_swerveDrive.getState().Speeds,
             m_swerveDrive::setChassisSpeedsAuto,
         new PPHolonomicDriveController(
             new PIDConstants(m_translationPIDConstants.kP,

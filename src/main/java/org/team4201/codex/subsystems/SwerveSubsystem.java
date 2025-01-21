@@ -20,13 +20,6 @@ public interface SwerveSubsystem extends Subsystem {
     SwerveDriveState getState();
 
     /**
-     * Function to get the {@link ChassisSpeeds} for PathPlanner's path following.
-     *
-     * @return ChassisSpeeds
-     */
-    ChassisSpeeds getChassisSpeeds();
-
-    /**
      * Function for PathPlanner to control the robot's motion in auto.
      *
      * @param chassisSpeeds WPILib's {@link ChassisSpeeds}

@@ -29,11 +29,6 @@ public class TestSwerveSubsystem {
         }
 
         @Override
-        public ChassisSpeeds getChassisSpeeds() {
-            return new ChassisSpeeds();
-        }
-
-        @Override
         public void setChassisSpeedsAuto(ChassisSpeeds chassisSpeeds, DriveFeedforwards feedforwards) {
 
         }
