@@ -149,17 +149,19 @@ public class TrajectoryUtils {
       }
 
       var trajectory = path.getIdealTrajectory(m_robotConfig);
-      pathPoints.addAll(
-              trajectory.get().getStates().stream()
-                      .map(
-                              (state) ->
-                                      new Trajectory.State(
-                                              state.timeSeconds,
-                                              state.linearVelocity,
-                                              0,
-                                              state.pose,
-                                              0))
-                      .toList());
+      trajectory.ifPresent(t-> {
+        pathPoints.addAll(t.getStates().stream()
+                .map(
+                        (state) ->
+                                new Trajectory.State(
+                                        state.timeSeconds,
+                                        state.linearVelocity,
+                                        0,
+                                        state.pose,
+                                        0))
+                .toList());
+
+      });
     }
 
     return new Trajectory(pathPoints);
