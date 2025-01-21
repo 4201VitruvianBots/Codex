@@ -125,24 +125,22 @@ public class TrajectoryUtils {
   /**
    * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
    *
-   * @param robotConfig The {@link RobotConfig} of the robot
    * @param paths the {@link PathPlannerPath}(s) to use
    *
    * @return {@link Trajectory}
    */
-  public Trajectory getTrajectoryFromPathPlanner(RobotConfig robotConfig, PathPlannerPath... paths) {
-    return getTrajectoryFromPathPlanner(false, robotConfig, paths);
+  public Trajectory getTrajectoryFromPathPlanner(PathPlannerPath... paths) {
+    return getTrajectoryFromPathPlanner(false, paths);
   }
   /**
    * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
    *
-   * @param flipPath Whether or not to flip the {@link PathPlannerPath} before displaying it.
-   * @param robotConfig The {@link RobotConfig} of the robot
+   * @param flipPath Whether to flip the {@link PathPlannerPath} before displaying it.
    * @param paths the {@link PathPlannerPath}(s) to use
    *
    * @return {@link Trajectory}
    */
-  public Trajectory getTrajectoryFromPathPlanner(boolean flipPath, RobotConfig robotConfig, PathPlannerPath... paths) {
+  public Trajectory getTrajectoryFromPathPlanner(boolean flipPath, PathPlannerPath... paths) {
     var pathPoints = new ArrayList<Trajectory.State>();
 
     for (var path : paths) {
@@ -150,7 +148,7 @@ public class TrajectoryUtils {
         path = path.flipPath();
       }
 
-      var trajectory = path.getIdealTrajectory(robotConfig);
+      var trajectory = path.getIdealTrajectory(m_robotConfig);
       pathPoints.addAll(
               trajectory.get().getStates().stream()
                       .map(
