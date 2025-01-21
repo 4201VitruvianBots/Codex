@@ -10,11 +10,15 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.config.PIDConstants;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import org.team4201.codex.subsystems.SwerveSubsystem;
+
+import java.util.ArrayList;
 
 /**
  * Utility class for working with autonomous trajectory following. Is currently designed around
@@ -133,5 +137,50 @@ public class TrajectoryUtils {
             robotConfig,
         () -> flipPath,
             m_swerveDrive);
+  }
+
+  /**
+   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
+   *
+   * @param robotConfig The {@link RobotConfig} of the robot
+   * @param paths the {@link PathPlannerPath}(s) to use
+   *
+   * @return {@link Trajectory}
+   */
+  public Trajectory getTrajectoryFromPathPlanner(RobotConfig robotConfig, PathPlannerPath... paths) {
+    return getTrajectoryFromPathPlanner(false, robotConfig, paths);
+  }
+  /**
+   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
+   *
+   * @param flipPath Whether or not to flip the {@link PathPlannerPath} before displaying it.
+   * @param robotConfig The {@link RobotConfig} of the robot
+   * @param paths the {@link PathPlannerPath}(s) to use
+   *
+   * @return {@link Trajectory}
+   */
+  public Trajectory getTrajectoryFromPathPlanner(boolean flipPath, RobotConfig robotConfig, PathPlannerPath... paths) {
+    var pathPoints = new ArrayList<Trajectory.State>();
+
+    for (var path : paths) {
+      if (flipPath) {
+        path = path.flipPath();
+      }
+
+      var trajectory = path.getIdealTrajectory(robotConfig);
+      pathPoints.addAll(
+              trajectory.get().getStates().stream()
+                      .map(
+                              (state) ->
+                                      new Trajectory.State(
+                                              state.timeSeconds,
+                                              state.linearVelocity,
+                                              0,
+                                              state.pose,
+                                              0))
+                      .toList());
+    }
+
+    return new Trajectory(pathPoints);
   }
 }
