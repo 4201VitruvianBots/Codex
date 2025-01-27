@@ -13,6 +13,15 @@ import java.util.ArrayList;
  *
  */
 public class VisualizationUtils {
+  /**
+   * Elevator type for {@link Elevator2d} visualization
+   */
+  public enum ELEVATOR_TYPE {
+    /** CASCADE */
+    CASCADE,
+    /** CONTINUOUS */
+    CONTINUOUS
+  }
 
   static class MechanismDisplay implements AutoCloseable {
     private final Mechanism2d m_display = new Mechanism2d(1, 1);
