@@ -4,58 +4,83 @@
 
 package org.team4201.codex.simulation.visualization;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import org.team4201.codex.simulation.visualization.configs.Flywheel2dConfig;
+
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 /**
  *  Class to represent a flywheel using {@link Mechanism2d}
  *  */
-public class Flywheel2d {
+public class Flywheel2d implements AutoCloseable {
   private int NUM_SIDES = 8;
-  private final MechanismLigament2d m_flywheel;
-  private final MechanismLigament2d m_spinner;
+
+  private final Flywheel2dConfig m_config;
   private final MechanismLigament2d[] m_sides = new MechanismLigament2d[NUM_SIDES];
-
-  private final String m_mechanismName;
-  private final double m_flywheelRadius;
-
+  private final MechanismLigament2d m_flywheel;
+  private MechanismObject2d m_parentObject;
+  private Flywheel2d m_subFlywheel2d;
 
   /**
    * Create a new {@link Flywheel2d} instance
    *
-   * @param name The name of the object (Must be unique across all {@link Mechanism2d} objects)
-   * @param flywheelRadius The radius of the flywheel
+   * @param config The {@link Flywheel2dConfig} that defines the Flywheel2d parameters
    */
-  public Flywheel2d(String name, double flywheelRadius) {
-    m_mechanismName = name;
-    m_flywheelRadius = flywheelRadius;
+  public Flywheel2d(Flywheel2dConfig config) {
+    this(config, null);
+  }
 
-    m_flywheel = new MechanismLigament2d(name, 1, 0);
-
-    m_spinner =
-            m_flywheel.append(
-                    new MechanismLigament2d(
-                            m_mechanismName, Units.inchesToMeters(1.7), 0, 0, new Color8Bit(Color.kAliceBlue)));
-
+  /**
+   * Create a new {@link Flywheel2d} instance
+   *
+   * @param config The {@link Flywheel2dConfig} that defines the Flywheel2d parameters
+   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or
+   *                     {@link MechanismLigament2d})the Flywheel attaches to
+   */
+  public Flywheel2d(Flywheel2dConfig config, MechanismLigament2d parentObject) {
+    m_config = config;
+    m_flywheel = new MechanismLigament2d(
+            m_config.m_name, m_config.m_initialRadius.in(Inches), 0, 3, m_config.m_color);
     initSides();
+
+    if(parentObject != null) {
+      m_parentObject = parentObject;
+
+      Flywheel2dConfig flywheelSubConfig = m_config.clone();
+      flywheelSubConfig.m_name = flywheelSubConfig.m_name + "_sub";
+      m_subFlywheel2d = new Flywheel2d(flywheelSubConfig);
+      m_parentObject.append(m_flywheel);
+    }
   }
 
   private void initSides() {
-    for(int i = 0; i < NUM_SIDES - 1; i++) {
+    for(int i = 0; i < NUM_SIDES; i++) {
       if (i == 0) {
-        m_spinner.append(
+        m_sides[i] =
                 new MechanismLigament2d(
-                        m_mechanismName + "_side" + i, m_flywheelRadius, 112.5, 3, new Color8Bit(Color.kDimGray)));
+                        m_config.m_name + "_side" + i, m_config.m_initialRadius.in(Inches), 112.5, 3, m_config.m_color);
+        m_flywheel.append(m_sides[i]);
       } else {
-        m_sides[i+1] =
-                m_sides[i].append(
-                        new MechanismLigament2d(
-                                m_mechanismName + "_side" + i, m_flywheelRadius, 45, 3, new Color8Bit(Color.kDimGray)));
+        m_sides[i] =
+                new MechanismLigament2d(
+                        m_config.m_name + "_side" + i, m_config.m_initialRadius.in(Inches), 45, 3, m_config.m_color);
+        m_sides[i-1].append(m_sides[i]);
       }
     }
+  }
+
+  /**
+   *  Get the {@link Flywheel2d}'s {@link Flywheel2dConfig}
+   *
+   * @return {@link Flywheel2dConfig}
+   */
+  public Flywheel2dConfig getConfig() {
+    return m_config;
   }
 
   /**
@@ -64,15 +89,49 @@ public class Flywheel2d {
    * @return {@link MechanismLigament2d}
    */
   public MechanismLigament2d getLigament() {
-    return m_spinner;
+    return m_flywheel;
+  }
+
+  /**
+   * Get the {@link Flywheel2d}'s parent {@link MechanismObject2d}. Returns null if it doesn't exist.
+   *
+   * @return {@link MechanismObject2d}
+   */
+  public MechanismObject2d getParentObject() {
+    return m_parentObject;
+  }
+
+  /**
+   * Get the {@link Flywheel2d}'s subMechanism. For displaying the mechanism by itself.
+   *
+   * @return {@link Flywheel2d}
+   */
+  public Flywheel2d getSubFlywheel() {
+    return m_subFlywheel2d;
   }
 
   /**
    * Update the {@link Flywheel2d}'s position for visualization.
    *
-   * @param rpm The velocity of the {@link Flywheel2d}. Used to change the color of the {@link Flywheel2d} for visualization.
+   * @param rps The velocity of the {@link Flywheel2d}. Used to change the color of the {@link Flywheel2d} for visualization.
    */
-  public void update(double rpm) {
-    m_spinner.setAngle(m_spinner.getAngle() - 360 * rpm / 60 * 0.2);
+  public void update(AngularVelocity rps) {
+    m_flywheel.setAngle(m_flywheel.getAngle() - 360 * rps.in(RotationsPerSecond) * 0.2);
+
+    if(m_subFlywheel2d != null) {
+      m_subFlywheel2d.update(rps);
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    m_flywheel.close();
+    for (var side: m_sides) {
+      side.close();
+    }
+
+    if(m_subFlywheel2d != null) {
+      m_subFlywheel2d.close();
+    }
   }
 }
