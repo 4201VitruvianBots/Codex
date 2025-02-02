@@ -24,7 +24,17 @@ public class FieldSim extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Add a static pose to FieldSim.
+   * Add a pose once to FieldSim.
+   *
+   * @param key The name of the object (Must be unique)
+   * @param poses The poses corresponding to the object's position
+   */
+  public void initializePoses(String key, Pose2d... poses) {
+    m_field2D.getObject(key).setPoses(poses);
+  }
+
+  /**
+   * Add a pose to FieldSim that will get updated.
    *
    * @param key The name of the object (Must be unique)
    * @param poses The poses corresponding to the object's position
@@ -34,11 +44,20 @@ public class FieldSim extends SubsystemBase implements AutoCloseable {
     m_field2D.getObject(key).setPoses(poses);
   }
 
+  /**
+   * Remove a pose from {@link Field2d}. If it was added with addPoses(), also stop it from being
+   * updated.
+   *
+   * @param key The name of the object
+   */
+  public void clearPose(String key) {
+    m_objectPoses.remove(key);
+    m_field2D.getObject(key).close();
+  }
+
   /** Remove all poses from being displayed on FieldSim */
   public void clearAllPoses() {
-    for (var entry : m_objectPoses.entrySet()) {
-      m_field2D.getObject(entry.getKey()).close();
-    }
+    for (var entry : m_objectPoses.entrySet()) m_field2D.getObject(entry.getKey()).close();
     m_objectPoses.clear();
   }
 
