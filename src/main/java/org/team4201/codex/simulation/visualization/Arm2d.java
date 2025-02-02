@@ -1,5 +1,7 @@
 package org.team4201.codex.simulation.visualization;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -9,11 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import org.team4201.codex.simulation.visualization.configs.Arm2dConfig;
 
-import static edu.wpi.first.units.Units.*;
-
-/**
- *  Class to represent an arm using {@link Mechanism2d}
- *  */
+/** Class to represent an arm using {@link Mechanism2d} */
 public class Arm2d implements AutoCloseable {
   private final Arm2dConfig m_config;
   private final MechanismLigament2d m_arm2d;
@@ -33,15 +31,17 @@ public class Arm2d implements AutoCloseable {
    * Create a new {@link Arm2d} instance
    *
    * @param config The {@link Arm2dConfig} that defines the Arm2d parameters
-   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or
-   *                     {@link MechanismLigament2d})the Arm2d attaches to
+   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or {@link
+   *     MechanismLigament2d})the Arm2d attaches to
    */
   public Arm2d(Arm2dConfig config, MechanismLigament2d parentObject) {
     m_config = config;
 
     // Create a "line" to represent the arm.
     // We will use this to show its current position
-    m_arm2d = new MechanismLigament2d(m_config.m_name,
+    m_arm2d =
+        new MechanismLigament2d(
+            m_config.m_name,
             m_config.m_initialLength.in(Inches),
             m_config.m_initialAngle.in(Degrees),
             m_config.m_initialWidth.in(Inches),
@@ -58,7 +58,7 @@ public class Arm2d implements AutoCloseable {
   }
 
   /**
-   *  Get the {@link Arm2d}'s {@link Arm2dConfig}
+   * Get the {@link Arm2d}'s {@link Arm2dConfig}
    *
    * @return {@link Arm2dConfig}
    */
@@ -92,6 +92,7 @@ public class Arm2d implements AutoCloseable {
   public Arm2d getArmSubMechanism() {
     return m_subArm2d;
   }
+
   /**
    * Set the {@link Arm2d}'s {@link Angle}.
    *
@@ -102,8 +103,8 @@ public class Arm2d implements AutoCloseable {
   }
 
   /**
-   * Set the {@link Arm2d}'s {@link Angle}. This function is used if you want a separate orientation for
-   * the standalone display of the Arm2d.
+   * Set the {@link Arm2d}'s {@link Angle}. This function is used if you want a separate orientation
+   * for the standalone display of the Arm2d.
    *
    * @param angle Angle of the Arm2d
    * @param subAngle Angle of the Arm2d's subMechanism.
@@ -129,7 +130,8 @@ public class Arm2d implements AutoCloseable {
    * Update the {@link Arm2d}'s position relative to its attachment point
    *
    * @param angle The angle to set the Arm2d to.
-   * @param velocity The velocity of the Arm2d. Used to change the color of the Arm2d for visualization.
+   * @param velocity The velocity of the Arm2d. Used to change the color of the Arm2d for
+   *     visualization.
    */
   public void update(Angle angle, AngularVelocity velocity) {
     update(angle, RotationsPerSecond.of(0), m_config.m_initialLength);
@@ -139,7 +141,8 @@ public class Arm2d implements AutoCloseable {
    * Update the {@link Arm2d}'s position relative to its attachment point
    *
    * @param angle The angle to set the Arm2d to.
-   * @param velocity The velocity of the Arm2d. Used to change the color of the Arm2d for visualization.
+   * @param velocity The velocity of the Arm2d. Used to change the color of the Arm2d for
+   *     visualization.
    * @param length The length of the Arm2d. By default, it will use its initial length.
    */
   public void update(Angle angle, AngularVelocity velocity, Distance length) {
@@ -149,7 +152,7 @@ public class Arm2d implements AutoCloseable {
     // Update the ligament color based on the module's current speed for easier visualization
     VisualizationUtils.updateMotorColor(m_arm2d, velocity.in(RotationsPerSecond), m_config.m_color);
 
-    if(m_subArm2d != null) {
+    if (m_subArm2d != null) {
       m_subArm2d.update(angle, velocity, length);
     }
   }
@@ -158,7 +161,7 @@ public class Arm2d implements AutoCloseable {
   public void close() throws Exception {
     m_arm2d.close();
 
-    if(m_subArm2d != null) {
+    if (m_subArm2d != null) {
       m_subArm2d.close();
     }
   }

@@ -1,5 +1,7 @@
 package org.team4201.codex.simulation.visualization;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -7,15 +9,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import org.team4201.codex.simulation.visualization.configs.Arm2dConfig;
-import org.team4201.codex.simulation.visualization.configs.BaseMechanismConfig;
 import org.team4201.codex.simulation.visualization.configs.Elevator2dConfig;
 
-import static edu.wpi.first.units.Units.*;
-
-/**
- *  Class to represent an elevator using {@link Mechanism2d}
- *  */
+/** Class to represent an elevator using {@link Mechanism2d} */
 public class Elevator2d implements AutoCloseable {
   private final Elevator2dConfig m_config;
   private final MechanismLigament2d[] m_elevatorStages;
@@ -35,21 +31,23 @@ public class Elevator2d implements AutoCloseable {
    * Create a new {@link Elevator2d} instance
    *
    * @param config The {@link Elevator2dConfig} that defines the Elevator2d parameters
-   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or
-   *                     {@link MechanismLigament2d})the Elevator2d attaches to
+   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or {@link
+   *     MechanismLigament2d})the Elevator2d attaches to
    */
   public Elevator2d(Elevator2dConfig config, MechanismObject2d parentObject) {
     m_config = config;
 
     m_elevatorStages = new MechanismLigament2d[m_config.m_numberOfStages];
-    for(int i = 0; i < m_elevatorStages.length; i++) {
-      m_elevatorStages[i] = new MechanismLigament2d(m_config.m_name + "_" + i,
+    for (int i = 0; i < m_elevatorStages.length; i++) {
+      m_elevatorStages[i] =
+          new MechanismLigament2d(
+              m_config.m_name + "_" + i,
               m_config.m_initialLength.in(Inches),
               m_config.m_angleOffset.in(Degrees),
               m_config.m_initialWidth.in(Inches),
               m_config.m_color);
       if (i > 0) {
-        m_elevatorStages[i-1].append(m_elevatorStages[i]);
+        m_elevatorStages[i - 1].append(m_elevatorStages[i]);
       }
     }
 
@@ -64,7 +62,7 @@ public class Elevator2d implements AutoCloseable {
   }
 
   /**
-   *  Get the {@link Elevator2d}'s {@link Elevator2dConfig}
+   * Get the {@link Elevator2d}'s {@link Elevator2dConfig}
    *
    * @return {@link Elevator2dConfig}
    */
@@ -85,7 +83,6 @@ public class Elevator2d implements AutoCloseable {
    * Get one of the {@link Elevator2d}'s {@link MechanismLigament2d} stage.
    *
    * @param index The stage index to return
-   *
    * @return {@link MechanismLigament2d}
    */
   public MechanismLigament2d getLigament(int index) {
@@ -111,8 +108,8 @@ public class Elevator2d implements AutoCloseable {
   }
 
   /**
-   * Set the {@link Elevator2d}'s {@link Angle}. This function is used if you want a separate orientation for
-   * the standalone display of the Elevator2d.
+   * Set the {@link Elevator2d}'s {@link Angle}. This function is used if you want a separate
+   * orientation for the standalone display of the Elevator2d.
    *
    * @param angle Angle of the Elevator2d
    * @param subAngle Angle of the Elevator2d's subMechanism.
@@ -138,7 +135,8 @@ public class Elevator2d implements AutoCloseable {
    * Update the {@link Elevator2d}'s position relative to its attachment point
    *
    * @param height The height to set the {@link Elevator2d} to.
-   * @param velocity The velocity of the {@link Elevator2d}. Used to change the color of the {@link Elevator2d} for visualization.
+   * @param velocity The velocity of the {@link Elevator2d}. Used to change the color of the {@link
+   *     Elevator2d} for visualization.
    */
   public void update(Distance height, LinearVelocity velocity) {
     switch (m_config.m_type) {
@@ -161,22 +159,22 @@ public class Elevator2d implements AutoCloseable {
         }
     }
 
-    for (var stage:m_elevatorStages) {
+    for (var stage : m_elevatorStages) {
       VisualizationUtils.updateMotorColor(stage, velocity.in(FeetPerSecond), m_config.m_color);
     }
 
-    if(m_subElevator2d != null) {
+    if (m_subElevator2d != null) {
       m_subElevator2d.update(height, velocity);
     }
   }
 
   @Override
   public void close() throws Exception {
-    for (var elevatorSegment: m_elevatorStages) {
+    for (var elevatorSegment : m_elevatorStages) {
       elevatorSegment.close();
     }
 
-    if(m_subElevator2d != null) {
+    if (m_subElevator2d != null) {
       m_subElevator2d.close();
     }
   }

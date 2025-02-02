@@ -6,9 +6,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
-/**
- *  Class to represent a top-down view of a swerve module using {@link Mechanism2d}
- *  */
+/** Class to represent a top-down view of a swerve module using {@link Mechanism2d} */
 public class SwerveModule2d implements AutoCloseable {
   private final MechanismLigament2d m_moduleLigament;
   private final Color8Bit m_ligamentColor = new Color8Bit(Color.kGray);
@@ -29,8 +27,10 @@ public class SwerveModule2d implements AutoCloseable {
     // We will use this to show the current direction/speed of the swerve module.
     m_moduleLigament = new MechanismLigament2d(m_name + "_direction", 0, 0);
   }
+
   /**
-   * Update the {@link SwerveModule2d}'s visualization based on the current {@link SwerveModuleState}
+   * Update the {@link SwerveModule2d}'s visualization based on the current {@link
+   * SwerveModuleState}
    *
    * @param state The {@link SwerveModuleState} of the swerve module
    */
@@ -39,7 +39,8 @@ public class SwerveModule2d implements AutoCloseable {
     m_moduleLigament.setAngle(state.angle.getDegrees());
 
     // Update the ligament color based on the module's current speed for easier visualization
-    VisualizationUtils.updateMotorColor(m_moduleLigament, state.speedMetersPerSecond, m_ligamentColor);
+    VisualizationUtils.updateMotorColor(
+        m_moduleLigament, state.speedMetersPerSecond, m_ligamentColor);
 
     m_moduleLigament.setColor(m_ligamentColor);
   }

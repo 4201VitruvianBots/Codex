@@ -5,7 +5,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '2025.0.8'
+def pubVersion = '2025.0.9'
 
 def releasesRepoUrl = "$buildDir/../releases/repos"
 
@@ -87,8 +87,8 @@ copy {
     from "frc4201Codex.json"
     into "$buildDir/../releases"
     expand(version: pubVersion,
-            groupId: artifactGroupId,
-            artifactId: baseArtifactId)
+    groupId: artifactGroupId,
+    artifactId: baseArtifactId)
 }
 
 artifacts {

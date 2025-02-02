@@ -15,52 +15,53 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TestSwerveSubsystem {
-    @BeforeEach
-    public void constructDevices() {
+  @BeforeEach
+  public void constructDevices() {}
 
+  @Test
+  public void testSwerveSubsystemInterface() {
+    SwerveDrivetrainConstants driveConstants = new SwerveDrivetrainConstants();
+
+    SwerveModuleConstants[] moduleConstants = new SwerveModuleConstants[4];
+    Translation2d[] modulePositions = {
+      new Translation2d(0.5, 0.5),
+      new Translation2d(0.5, -0.5),
+      new Translation2d(-0.5, 0.5),
+      new Translation2d(-0.5, -0.5)
+    };
+    SwerveModuleConstantsFactory<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+        ConstantCreator =
+            new SwerveModuleConstantsFactory<
+                    TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
+                .withDriveMotorGearRatio(1)
+                .withSteerMotorGearRatio(1);
+
+    for (int i = 0; i < 4; i++) {
+      moduleConstants[i] =
+          ConstantCreator.createModuleConstants(
+              i,
+              i + 4,
+              i,
+              0,
+              modulePositions[i].getX(),
+              modulePositions[i].getY(),
+              false,
+              false,
+              false);
     }
 
-    @Test
-    public void testSwerveSubsystemInterface() {
-        SwerveDrivetrainConstants driveConstants = new SwerveDrivetrainConstants();
+    SwerveDrive swerveDrive = new SwerveDrive(driveConstants, moduleConstants);
+  }
 
-        SwerveModuleConstants[] moduleConstants = new SwerveModuleConstants[4];
-        Translation2d[] modulePositions = {
-                new Translation2d(0.5, 0.5),
-                new Translation2d(0.5, -0.5),
-                new Translation2d(-0.5, 0.5),
-                new Translation2d(-0.5, -0.5)
-        };
-        SwerveModuleConstantsFactory<
-                TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-                ConstantCreator =
-                new SwerveModuleConstantsFactory<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
-                        .withDriveMotorGearRatio(1)
-                        .withSteerMotorGearRatio(1);
-
-        for (int i = 0; i < 4; i++) {
-            moduleConstants[i] = ConstantCreator.createModuleConstants(i,
-                i+4,
-                    i,
-                    0,
-                    modulePositions[i].getX(),
-                    modulePositions[i].getY(),
-                    false,
-                    false,
-                    false);
-        }
-
-        SwerveDrive swerveDrive = new SwerveDrive(driveConstants, moduleConstants);
+  public static class SwerveDrive extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
+      implements SwerveSubsystem {
+    public SwerveDrive(
+        SwerveDrivetrainConstants driveConstants,
+        SwerveModuleConstants<?, ?, ?>... moduleConstants) {
+      super(TalonFX::new, TalonFX::new, CANcoder::new, driveConstants, moduleConstants);
     }
 
-    public static class SwerveDrive extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements SwerveSubsystem {
-        public SwerveDrive(SwerveDrivetrainConstants driveConstants, SwerveModuleConstants<?, ?, ?>... moduleConstants) {
-            super(TalonFX::new, TalonFX::new, CANcoder::new, driveConstants, moduleConstants);
-        }
-
-        @Override
-        public void setChassisSpeedsAuto(ChassisSpeeds chassisSpeeds, DriveFeedforwards feedforwards) {
-
-        }
-    }
+    @Override
+    public void setChassisSpeedsAuto(ChassisSpeeds chassisSpeeds, DriveFeedforwards feedforwards) {}
+  }
 }

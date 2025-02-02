@@ -1,16 +1,15 @@
 package org.team4201.codex.commands;
 
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.function.BooleanSupplier;
-
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 public class CommandsTest extends CommandTestBase {
   private boolean m_trigger;

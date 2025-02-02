@@ -4,6 +4,9 @@
 
 package org.team4201.codex.simulation.visualization;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -11,12 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import org.team4201.codex.simulation.visualization.configs.Flywheel2dConfig;
 
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
-/**
- *  Class to represent a flywheel using {@link Mechanism2d}
- *  */
+/** Class to represent a flywheel using {@link Mechanism2d} */
 public class Flywheel2d implements AutoCloseable {
   private int NUM_SIDES = 8;
 
@@ -39,16 +37,17 @@ public class Flywheel2d implements AutoCloseable {
    * Create a new {@link Flywheel2d} instance
    *
    * @param config The {@link Flywheel2dConfig} that defines the Flywheel2d parameters
-   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or
-   *                     {@link MechanismLigament2d})the Flywheel attaches to
+   * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or {@link
+   *     MechanismLigament2d})the Flywheel attaches to
    */
   public Flywheel2d(Flywheel2dConfig config, MechanismLigament2d parentObject) {
     m_config = config;
-    m_flywheel = new MechanismLigament2d(
+    m_flywheel =
+        new MechanismLigament2d(
             m_config.m_name, m_config.m_initialRadius.in(Inches), 0, 3, m_config.m_color);
     initSides();
 
-    if(parentObject != null) {
+    if (parentObject != null) {
       m_parentObject = parentObject;
 
       Flywheel2dConfig flywheelSubConfig = m_config.clone();
@@ -59,23 +58,31 @@ public class Flywheel2d implements AutoCloseable {
   }
 
   private void initSides() {
-    for(int i = 0; i < NUM_SIDES; i++) {
+    for (int i = 0; i < NUM_SIDES; i++) {
       if (i == 0) {
         m_sides[i] =
-                new MechanismLigament2d(
-                        m_config.m_name + "_side" + i, m_config.m_initialRadius.in(Inches), 112.5, 3, m_config.m_color);
+            new MechanismLigament2d(
+                m_config.m_name + "_side" + i,
+                m_config.m_initialRadius.in(Inches),
+                112.5,
+                3,
+                m_config.m_color);
         m_flywheel.append(m_sides[i]);
       } else {
         m_sides[i] =
-                new MechanismLigament2d(
-                        m_config.m_name + "_side" + i, m_config.m_initialRadius.in(Inches), 45, 3, m_config.m_color);
-        m_sides[i-1].append(m_sides[i]);
+            new MechanismLigament2d(
+                m_config.m_name + "_side" + i,
+                m_config.m_initialRadius.in(Inches),
+                45,
+                3,
+                m_config.m_color);
+        m_sides[i - 1].append(m_sides[i]);
       }
     }
   }
 
   /**
-   *  Get the {@link Flywheel2d}'s {@link Flywheel2dConfig}
+   * Get the {@link Flywheel2d}'s {@link Flywheel2dConfig}
    *
    * @return {@link Flywheel2dConfig}
    */
@@ -93,7 +100,8 @@ public class Flywheel2d implements AutoCloseable {
   }
 
   /**
-   * Get the {@link Flywheel2d}'s parent {@link MechanismObject2d}. Returns null if it doesn't exist.
+   * Get the {@link Flywheel2d}'s parent {@link MechanismObject2d}. Returns null if it doesn't
+   * exist.
    *
    * @return {@link MechanismObject2d}
    */
@@ -113,12 +121,13 @@ public class Flywheel2d implements AutoCloseable {
   /**
    * Update the {@link Flywheel2d}'s position for visualization.
    *
-   * @param rps The velocity of the {@link Flywheel2d}. Used to change the color of the {@link Flywheel2d} for visualization.
+   * @param rps The velocity of the {@link Flywheel2d}. Used to change the color of the {@link
+   *     Flywheel2d} for visualization.
    */
   public void update(AngularVelocity rps) {
     m_flywheel.setAngle(m_flywheel.getAngle() - 360 * rps.in(RotationsPerSecond) * 0.2);
 
-    if(m_subFlywheel2d != null) {
+    if (m_subFlywheel2d != null) {
       m_subFlywheel2d.update(rps);
     }
   }
@@ -126,11 +135,11 @@ public class Flywheel2d implements AutoCloseable {
   @Override
   public void close() throws Exception {
     m_flywheel.close();
-    for (var side: m_sides) {
+    for (var side : m_sides) {
       side.close();
     }
 
-    if(m_subFlywheel2d != null) {
+    if (m_subFlywheel2d != null) {
       m_subFlywheel2d.close();
     }
   }

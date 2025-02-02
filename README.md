@@ -17,5 +17,5 @@ Versioning uses the following numbering pattern **YYYY.AA.BB**
 ## Development Notes
 * Maven artifacts are saved under the [releases/](releases) directory after running `./gradlew publish`.
 * To publish changes to the library, run `./gradlew publish` and push the updated files under `releases/` to GitHub.
-  * TODO: This can be automated with a GitHub action. 
+  * TODO: This can be automated with a GitHub action.
 * The Codex repo is set to host the root directory of the main branch as a GitHub page, which allows the vendordep JSON file to pull the library.

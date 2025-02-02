@@ -2,9 +2,6 @@ package org.team4201.codex.utils;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
@@ -15,78 +12,75 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
-import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.team4201.codex.subsystems.SwerveSubsystem;
 import org.team4201.codex.subsystems.TestSwerveSubsystem;
 
-import java.util.ArrayList;
-
 public class TestTrajectoryUtils {
-    @BeforeEach
-    public void constructDevices() {
+  @BeforeEach
+  public void constructDevices() {}
 
+  @Test
+  public void testTrajectoryUtils() {
+    SwerveDrivetrainConstants driveConstants = new SwerveDrivetrainConstants();
+
+    SwerveModuleConstants[] moduleConstants = new SwerveModuleConstants[4];
+    Translation2d[] modulePositions = {
+      new Translation2d(0.5, 0.5),
+      new Translation2d(0.5, -0.5),
+      new Translation2d(-0.5, 0.5),
+      new Translation2d(-0.5, -0.5)
+    };
+    SwerveModuleConstantsFactory<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+        ConstantCreator =
+            new SwerveModuleConstantsFactory<
+                    TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
+                .withDriveMotorGearRatio(1)
+                .withSteerMotorGearRatio(1);
+
+    for (int i = 0; i < 4; i++) {
+      moduleConstants[i] =
+          ConstantCreator.createModuleConstants(
+              i,
+              i + 4,
+              i,
+              0,
+              modulePositions[i].getX(),
+              modulePositions[i].getY(),
+              false,
+              false,
+              false);
     }
 
-    @Test
-    public void testTrajectoryUtils() {
-        SwerveDrivetrainConstants driveConstants = new SwerveDrivetrainConstants();
+    TestSwerveSubsystem.SwerveDrive swerveDrive =
+        new TestSwerveSubsystem.SwerveDrive(driveConstants, moduleConstants);
 
-        SwerveModuleConstants[] moduleConstants = new SwerveModuleConstants[4];
-        Translation2d[] modulePositions = {
+    var trajectoryUtils =
+        new TrajectoryUtils(
+            swerveDrive,
+            new RobotConfig(
+                0,
+                0,
+                new ModuleConfig(0, 0, 0, DCMotor.getKrakenX60(1), 0, 0),
                 new Translation2d(0.5, 0.5),
                 new Translation2d(0.5, -0.5),
                 new Translation2d(-0.5, 0.5),
-                new Translation2d(-0.5, -0.5)
-        };
-        SwerveModuleConstantsFactory<
-                TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-                ConstantCreator =
-                new SwerveModuleConstantsFactory<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
-                        .withDriveMotorGearRatio(1)
-                        .withSteerMotorGearRatio(1);
+                new Translation2d(-0.5, -0.5)),
+            new PIDConstants(0),
+            new PIDConstants(0));
 
-        for (int i = 0; i < 4; i++) {
-            moduleConstants[i] = ConstantCreator.createModuleConstants(i,
-                    i+4,
-                    i,
-                    0,
-                    modulePositions[i].getX(),
-                    modulePositions[i].getY(),
-                    false,
-                    false,
-                    false);
-        }
+    var pathPoints = new ArrayList<PathPoint>();
+    pathPoints.add(new PathPoint(new Translation2d(0, 0)));
+    pathPoints.add(new PathPoint(new Translation2d(10, 0)));
 
-        TestSwerveSubsystem.SwerveDrive swerveDrive = new TestSwerveSubsystem.SwerveDrive(driveConstants, moduleConstants);
+    var path =
+        PathPlannerPath.fromPathPoints(
+            pathPoints, new PathConstraints(1, 1, 1, 1, 12), new GoalEndState(0, new Rotation2d()));
 
-        var trajectoryUtils =
-                new TrajectoryUtils(
-                        swerveDrive,
-                        new RobotConfig(
-                                0,
-                                0,
-                                new ModuleConfig(0, 0, 0, DCMotor.getKrakenX60(1), 0, 0),
-                                new Translation2d(0.5, 0.5),
-                                new Translation2d(0.5, -0.5),
-                                new Translation2d(-0.5, 0.5),
-                                new Translation2d(-0.5, -0.5)),
-                        new PIDConstants(0),
-                        new PIDConstants(0));
-
-        var pathPoints = new ArrayList<PathPoint>();
-        pathPoints.add(new PathPoint(new Translation2d(0, 0)));
-        pathPoints.add(new PathPoint(new Translation2d(10, 0)));
-
-        var path =
-                PathPlannerPath.fromPathPoints(
-                        pathPoints, new PathConstraints(1, 1, 1, 1, 12), new GoalEndState(0, new Rotation2d()));
-
-        var wpilibTrajectory = trajectoryUtils.getTrajectoryFromPathPlanner(path);
-    }
+    var wpilibTrajectory = trajectoryUtils.getTrajectoryFromPathPlanner(path);
+  }
 }

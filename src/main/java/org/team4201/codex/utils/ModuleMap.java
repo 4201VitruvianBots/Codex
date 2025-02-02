@@ -11,10 +11,7 @@ import java.util.Map;
  */
 public class ModuleMap {
 
-  /**
-   * Module position relative to the center of the robot.
-   *
-   */
+  /** Module position relative to the center of the robot. */
   public enum MODULE_POSITION {
     /** Front left */
     FRONT_LEFT,
@@ -35,7 +32,6 @@ public class ModuleMap {
    * @param <V> Type to map {@link MODULE_POSITION} to.
    * @param values Must have at least as many elements as {@link MODULE_POSITION} has entries. Any
    *     entries after will be ignored.
-   *
    * @return HashMap
    */
   @SafeVarargs
@@ -56,7 +52,6 @@ public class ModuleMap {
    *
    * @param <V> Type to map {@link MODULE_POSITION} to.
    * @param map Map of {@link MODULE_POSITION}.
-   *
    * @return ArrayList
    */
   public static <V> List<V> orderedValuesList(Map<MODULE_POSITION, V> map) {
@@ -78,7 +73,6 @@ public class ModuleMap {
    * @param array An array of the class to output an array of, e.g. {@code
    *     moduleTranslations.valuesArray(new Translation2d[0])}. Required because Java can't make an
    *     array of generics.
-   *
    * @return ArrayList
    */
   public static <V> V[] orderedValues(Map<MODULE_POSITION, V> map, V[] array) {

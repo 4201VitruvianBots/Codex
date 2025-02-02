@@ -6,6 +6,7 @@ plugins {
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id "edu.wpi.first.GradleRIO" version "2025.2.1"
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 // WPILib Version
@@ -149,6 +150,56 @@ if (project.hasProperty('onlylinuxathena') || project.hasProperty('onlylinuxarm3
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
     options.encoding = 'UTF-8'
+}
+
+// Spotless code formatter configuration
+spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        toggleOffOn()
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        greclipse()
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    format 'xml', {
+        target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        eclipseWtp('xml')
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+    format 'misc', {
+        target fileTree('.') {
+            include '**/*.md', '**/.gitignore'
+            exclude '**/build/**', '**/build-*/**'
+        }
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
+}
+
+apply plugin: 'com.diffplug.spotless'
+
+afterEvaluate {
+    tasks.getByName('spotlessCheck').dependsOn(tasks.getByName('spotlessApply'))
 }
 
 // Setup Javadocs to link back to WPILib docs

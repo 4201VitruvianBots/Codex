@@ -5,113 +5,107 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
-/**
- * Class to handle all updates to the Field2D widget
- */
-public class FieldSim implements AutoCloseable, Subsystem {
-    private final Field2d m_field2D = new Field2d();
+/** Class to handle all updates to the Field2D widget */
+public class FieldSim extends SubsystemBase implements AutoCloseable {
+  private final Field2d m_field2D = new Field2d();
 
-    private Map<String, Pose2d[]> m_staticObjectPoses = new HashMap<>();
-    private Map<String, Pose2d[]> m_dynamicObjectPoses = new HashMap<>();
+  private final Map<String, Pose2d[]> m_staticObjectPoses = new HashMap<>();
+  private final Map<String, Supplier<Pose2d[]>> m_dynamicObjectPoseFunctions = new HashMap<>();
 
-    private String[] m_protectedKeys = {
-            "robotPose",
-            "modulePoses"
-    };
+  private final String[] m_protectedKeys = {"robotPose", "modulePoses"};
 
-    /**
-     * Create a FieldSim object
-     */
-    public FieldSim() {
-        SmartDashboard.putData("Field2D", m_field2D);
+  /** Create a FieldSim object */
+  public FieldSim() {
+    SmartDashboard.putData("Field2D", m_field2D);
+  }
+
+  /**
+   * Add a static pose to FieldSim.
+   *
+   * @param key The name of the object (Must be unique)
+   * @param poses The poses corresponding to the object's position
+   */
+  public void addStaticPoses(String key, Pose2d... poses) {
+    if (m_dynamicObjectPoseFunctions.containsKey(key))
+      throw new IllegalArgumentException("Key '" + key + "' is already used for a dynamic pose!");
+    m_staticObjectPoses.put(key, poses);
+    m_field2D.getObject(key).setPoses(poses);
+  }
+
+  /**
+   * Add a pose to FieldSim to display
+   *
+   * @param key The name of the object (Must be unique)
+   * @param poses The poses corresponding to the object's position
+   */
+  public void registerPoseFunction(String key, Supplier<Pose2d[]> poses) {
+    if (m_staticObjectPoses.containsKey(key))
+      throw new IllegalArgumentException("Key '" + key + "' is already used for a static pose!");
+    m_dynamicObjectPoseFunctions.put(key, poses);
+  }
+
+  /**
+   * Remove a pose from being displayed on FieldSim
+   *
+   * @param key The name of the object to remove
+   */
+  public void unregisterPoseFunction(String key) {
+    m_staticObjectPoses.remove(key);
+    m_dynamicObjectPoseFunctions.remove(key);
+    m_field2D.getObject(key).close();
+  }
+
+  /** Remove all poses from being displayed on FieldSim */
+  public void clearAllPoses() {
+    for (var entry : m_dynamicObjectPoseFunctions.entrySet()) {
+      m_field2D.getObject(entry.getKey()).close();
+    }
+    m_dynamicObjectPoseFunctions.clear();
+  }
+
+  /**
+   * Add a trajectory to be displayed in the Field2D widget.
+   *
+   * @param trajectory The wpilib Trajectory to display
+   */
+  public void addTrajectory(Trajectory trajectory) {
+    m_field2D.getObject("path").setTrajectory(trajectory);
+  }
+
+  private void updateField2d() {
+    if (m_dynamicObjectPoseFunctions.containsKey("robotPose"))
+      m_field2D.setRobotPose(m_dynamicObjectPoseFunctions.get("robotPose").get()[0]);
+
+    for (var entry : m_dynamicObjectPoseFunctions.entrySet()) {
+      if (Arrays.asList(m_protectedKeys).contains(entry.getKey())) {
+        continue;
+      }
+      m_field2D.getObject(entry.getKey()).setPoses(entry.getValue().get());
     }
 
-
-    /**
-     * Add a static pose to FieldSim.
-     *
-     * @param key The name of the object (Must be unique)
-     * @param poses The poses corresponding to the object's position
-     */
-    public void addStaticPoses(String key, Pose2d... poses) {
-        if(m_dynamicObjectPoses.containsKey(key))
-            throw new IllegalArgumentException("Key '" + key + "' is already used for a dynamic pose!");
-        m_staticObjectPoses.put(key, poses);
-        m_field2D.getObject(key).setPoses(poses);
+    if (RobotBase.isSimulation()) {
+      if (m_dynamicObjectPoseFunctions.containsKey("modulePoses"))
+        m_field2D
+            .getObject("Swerve Modules")
+            .setPoses(m_dynamicObjectPoseFunctions.get("modulePoses").get());
     }
+  }
 
-    /**
-     * Add a pose to FieldSim to display
-     *
-     * @param key The name of the object (Must be unique)
-     * @param poses The poses corresponding to the object's position
-     */
-    public void addPoses(String key, Pose2d... poses) {
-        if(m_staticObjectPoses.containsKey(key))
-            throw new IllegalArgumentException("Key '" + key + "' is already used for a static pose!");
-        m_dynamicObjectPoses.put(key, poses);
-    }
+  @Override
+  public void periodic() {
+    updateField2d();
+  }
 
-    /**
-     * Remove a pose from being displayed on FieldSim
-     *
-     * @param key The name of the object to remove
-     */
-    public void removePoses(String key) {
-        m_staticObjectPoses.remove(key);
-        m_dynamicObjectPoses.remove(key);
-        m_field2D.getObject(key).close();
-    }
+  @Override
+  public void simulationPeriodic() {}
 
-    /**
-     * Remove all poses from being displayed on FieldSim
-     */
-    public void clearAllPoses() {
-        for (var entry: m_dynamicObjectPoses.entrySet()) {
-            m_field2D.getObject(entry.getKey()).close();
-        }
-        m_dynamicObjectPoses.clear();
-    }
-
-    /**
-     * Add a trajectory to be displayed in the Field2D widget.
-     *
-     * @param trajectory The wpilib Trajectory to display
-     */
-    public void addTrajectory(Trajectory trajectory) {
-        m_field2D.getObject("path").setTrajectory(trajectory);
-    }
-
-    private void updateField2d() {
-        m_field2D.setRobotPose(m_dynamicObjectPoses.get("robotPose")[0]);
-
-        for (var entry: m_dynamicObjectPoses.entrySet()) {
-            if (Arrays.asList(m_protectedKeys).contains(entry.getKey())) {
-                continue;
-            }
-            m_field2D.getObject(entry.getKey()).setPoses(entry.getValue());
-        }
-
-        if (RobotBase.isSimulation()) {
-            m_field2D.getObject("Swerve Modules").setPoses(m_dynamicObjectPoses.get("modulePoses"));
-        }
-    }
-
-    @Override
-    public void periodic() {
-        updateField2d();
-    }
-
-    @Override
-    public void simulationPeriodic() {}
-
-    @SuppressWarnings("RedundantThrows")
-    @Override
-    public void close() throws Exception {}
+  @SuppressWarnings("RedundantThrows")
+  @Override
+  public void close() throws Exception {}
 }

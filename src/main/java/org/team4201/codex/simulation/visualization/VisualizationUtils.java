@@ -5,17 +5,11 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-
 import java.util.ArrayList;
 
-/**
- * Utility class to work with WPILib's {@link Mechanism2d}
- *
- */
+/** Utility class to work with WPILib's {@link Mechanism2d} */
 public class VisualizationUtils {
-  /**
-   * Elevator type for {@link Elevator2d} visualization
-   */
+  /** Elevator type for {@link Elevator2d} visualization */
   public enum ELEVATOR_TYPE {
     /** CASCADE */
     CASCADE,
