@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 import org.team4201.codex.subsystems.SwerveSubsystem;
 
 /**
@@ -57,7 +58,7 @@ public class TrajectoryUtils {
   public Command generatePPHolonomicCommand(String pathName) {
     try {
       return generatePPHolonomicCommand(
-          PathPlannerPath.fromPathFile(pathName), m_robotConfig, false);
+          PathPlannerPath.fromPathFile(pathName), m_robotConfig, this::flipPathByAlliance);
     } catch (Exception e) {
       DriverStation.reportError(
           "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
@@ -70,14 +71,14 @@ public class TrajectoryUtils {
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param pathName The name of the PathPlanner Trajectory file to reference.
-   * @param manualFlip Option to manually flip the trajectory instead of using the robot's current
-   *     {@link DriverStation.Alliance} color
+   * @param flipPath Option to flip the trajectory instead of using the robot's current {@link
+   *     DriverStation.Alliance} color
    * @return Command
    */
-  public Command generatePPHolonomicCommand(String pathName, boolean manualFlip) {
+  public Command generatePPHolonomicCommand(String pathName, BooleanSupplier flipPath) {
     try {
       return generatePPHolonomicCommand(
-          PathPlannerPath.fromPathFile(pathName), m_robotConfig, manualFlip);
+          PathPlannerPath.fromPathFile(pathName), m_robotConfig, flipPath);
     } catch (Exception e) {
       DriverStation.reportError(
           "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
@@ -95,7 +96,7 @@ public class TrajectoryUtils {
    */
   public Command generatePPHolonomicCommand(PathPlannerPath path, RobotConfig robotConfig) {
 
-    return generatePPHolonomicCommand(path, robotConfig, false);
+    return generatePPHolonomicCommand(path, robotConfig, () -> false);
   }
 
   /**
@@ -107,7 +108,7 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command generatePPHolonomicCommand(
-      PathPlannerPath path, RobotConfig robotConfig, boolean flipPath) {
+      PathPlannerPath path, RobotConfig robotConfig, BooleanSupplier flipPath) {
     return new FollowPathCommand(
         path,
         () -> m_swerveDrive.getState().Pose,
@@ -121,36 +122,65 @@ public class TrajectoryUtils {
             new PIDConstants(
                 m_rotationPIDConstants.kP, m_rotationPIDConstants.kI, m_rotationPIDConstants.kD)),
         robotConfig,
-        () -> flipPath,
+        flipPath,
         m_swerveDrive);
   }
 
   /**
-   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
+   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}. NOTE: This
+   * constructor should only be used for generating Trajectories used for displays.
    *
    * @param paths the {@link PathPlannerPath}(s) to use
    * @return {@link Trajectory}
    */
   public Trajectory getTrajectoryFromPathPlanner(PathPlannerPath... paths) {
-    return getTrajectoryFromPathPlanner(false, paths);
+    return getTrajectoryFromPathPlanner(new TrajectoryConfig(1, 1), paths);
   }
 
   /**
    * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
    *
+   * @param config The WPILib {@link TrajectoryConfig}.
+   * @param paths the {@link PathPlannerPath}(s) to use
+   * @return {@link Trajectory}
+   */
+  public Trajectory getTrajectoryFromPathPlanner(
+      TrajectoryConfig config, PathPlannerPath... paths) {
+    return getTrajectoryFromPathPlanner(config, false, paths);
+  }
+
+  /**
+   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
+   *
+   * @param config The WPILib {@link TrajectoryConfig}.
    * @param flipPath Whether to flip the {@link PathPlannerPath} before displaying it.
    * @param paths the {@link PathPlannerPath}(s) to use
    * @return {@link Trajectory}
    */
-  public Trajectory getTrajectoryFromPathPlanner(boolean flipPath, PathPlannerPath... paths) {
+  public Trajectory getTrajectoryFromPathPlanner(
+      TrajectoryConfig config, boolean flipPath, PathPlannerPath... paths) {
     var pathPoses = new ArrayList<Pose2d>();
 
     for (var path : paths) {
       if (flipPath) {
         path = path.flipPath();
       }
-      pathPoses.addAll(path.getPathPoses());
+      var subPathPoses = path.getPathPoses();
+      subPathPoses.set(
+          0, new Pose2d(subPathPoses.get(0).getTranslation(), path.getInitialHeading()));
+      subPathPoses.set(
+          subPathPoses.size() - 1,
+          new Pose2d(
+              subPathPoses.get(subPathPoses.size() - 1).getTranslation(),
+              path.getGoalEndState().rotation()));
+      pathPoses.addAll(subPathPoses);
     }
-    return TrajectoryGenerator.generateTrajectory(pathPoses, new TrajectoryConfig(1, 1));
+    return TrajectoryGenerator.generateTrajectory(pathPoses, config);
+  }
+
+  private boolean flipPathByAlliance() {
+    return DriverStation.getAlliance()
+        .filter(alliance -> alliance == DriverStation.Alliance.Red)
+        .isPresent();
   }
 }

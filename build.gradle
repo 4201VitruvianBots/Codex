@@ -115,6 +115,19 @@ test {
         events "failed"
         exceptionFormat "full"
     }
+
+    filter {
+        excludeTestsMatching 'edu.wpi'
+    }
+}
+
+task testAll(type:Test) {
+    useJUnitPlatform()
+    systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
 }
 
 // Simulation configuration (e.g. environment variables).
