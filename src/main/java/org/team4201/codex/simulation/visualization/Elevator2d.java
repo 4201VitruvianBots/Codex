@@ -44,7 +44,7 @@ public class Elevator2d implements AutoCloseable {
               m_config.m_name + "_" + i,
               m_config.m_initialLength.in(Inches),
               m_config.m_angleOffset.in(Degrees),
-              m_config.m_initialWidth.in(Inches),
+              m_config.m_lineWidth,
               m_config.m_color);
       if (i > 0) {
         m_elevatorStages[i - 1].append(m_elevatorStages[i]);

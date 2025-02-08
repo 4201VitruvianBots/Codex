@@ -44,7 +44,7 @@ public class Robot extends TimedRobot {
 
     Mechanism2d armMechanism = new Mechanism2d(15, 15);
     arm2d.setAngle(Degree.of(90));
-    arm2d.getArmSubMechanism().getConfig().setAngleOffset(Degree.of(90));
+    arm2d.getArmSubMechanism().getConfig().withAngleOffset(Degree.of(90));
     armMechanism.getRoot("armRoot", 7.5, 1).append(arm2d.getArmSubMechanism().getLigament());
 
     Mechanism2d flywheelMechanism = new Mechanism2d(5, 5);
