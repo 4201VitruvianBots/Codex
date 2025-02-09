@@ -199,8 +199,16 @@ public class Elevator2d implements AutoCloseable {
         break;
       case CASCADE:
       default:
-        for (var stage : m_elevatorStages) {
-          stage.setLength(height.in(Inches) / m_config.m_numberOfStages);
+        for (int i = 0; i < m_config.m_numberOfStages; i++) {
+          if (i == 0) {
+            m_elevatorStages[i].setLength(
+                m_config
+                    .m_superStructureOffset
+                    .plus(height.div(m_config.m_numberOfStages))
+                    .in(Inches));
+          } else {
+            m_elevatorStages[i].setLength(height.div(m_config.m_numberOfStages).in(Inches));
+          }
         }
     }
 

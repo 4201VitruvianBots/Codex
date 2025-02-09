@@ -24,6 +24,9 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   /** Angle offset of the elevator to its parent {@link MechanismLigament2d} */
   public Angle m_angleOffset;
 
+  /** Offset of the elevator's superStructure */
+  public Distance m_superStructureOffset;
+
   /** {@link Elevator2d} type (for visualization). Default is CASCADE */
   public ELEVATOR_TYPE m_type = ELEVATOR_TYPE.CASCADE;
 
@@ -99,6 +102,18 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   }
 
   /**
+   * Set the super structure offset of the {@link Elevator2d} to its parent mechanism
+   *
+   * @param lengthOffset The {@link Distance} of the super structure when the elevator's height
+   *     reads 0.
+   * @return this
+   */
+  public Elevator2dConfig withSuperStructureOffset(Distance lengthOffset) {
+    this.m_superStructureOffset = lengthOffset;
+    return this;
+  }
+
+  /**
    * Set the {@link Elevator2d} type (For visualization)
    *
    * @param type The {@link ELEVATOR_TYPE}
@@ -140,6 +155,8 @@ public class Elevator2dConfig extends BaseMechanismConfig {
    * @return {@link Elevator2dConfig}
    */
   public Elevator2dConfig clone() {
-    return new Elevator2dConfig(m_name, m_color, m_initialLength, m_angleOffset, m_stageMaxLengths);
+    return new Elevator2dConfig(m_name, m_color, m_initialLength, m_angleOffset, m_stageMaxLengths)
+        .withLineWidth(m_lineWidth)
+        .withSuperStructureOffset(m_superStructureOffset);
   }
 }
