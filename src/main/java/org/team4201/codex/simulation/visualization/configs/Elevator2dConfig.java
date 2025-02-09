@@ -30,6 +30,9 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   /** {@link Elevator2d} type (for visualization). Default is CASCADE */
   public ELEVATOR_TYPE m_type = ELEVATOR_TYPE.CASCADE;
 
+  /** {@link Color8Bit} to distinguish elevator stages */
+  public Color8Bit[] m_stageColors;
+
   /** Line width (thickness) of the elevator. This is in pixels of the Mechanism2d */
   public double m_lineWidth = 3;
 
@@ -39,7 +42,7 @@ public class Elevator2dConfig extends BaseMechanismConfig {
    * @param name Name of the mechanism
    */
   public Elevator2dConfig(String name) {
-    this(name, new Color8Bit(255, 0, 0), Inches.of(24), Degrees.of(90), Inches.of(24));
+    this(name, new Color8Bit(0, 128, 0), Inches.of(12), Degrees.of(90));
   }
 
   /**
@@ -64,7 +67,6 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   public Elevator2dConfig(
       String name, Color8Bit color, Distance initialLength, Angle initialAngleOffset) {
     this(name, color, initialLength, initialAngleOffset, initialLength);
-    this.m_stageMaxLengths = new Distance[] {Inches.of(12)};
   }
 
   /**
@@ -88,6 +90,10 @@ public class Elevator2dConfig extends BaseMechanismConfig {
     m_angleOffset = initialAngleOffset;
     m_stageMaxLengths = maxStageLengths;
     m_numberOfStages = maxStageLengths.length;
+    m_stageColors = new Color8Bit[m_numberOfStages];
+    for (int i = 0; i < m_numberOfStages; i++) {
+      m_stageColors[i] = m_color;
+    }
   }
 
   /**
@@ -150,6 +156,18 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   }
 
   /**
+   * Set the colors for each stage for the {@link Elevator2d} (For visualization). Must be set for
+   * CONTINUOUS elevators.
+   *
+   * @param colors The {@link Color8Bit} for each stage.
+   * @return this
+   */
+  public Elevator2dConfig withStageColors(Color8Bit... colors) {
+    this.m_stageColors = colors;
+    return this;
+  }
+
+  /**
    * Copy the {@link Elevator2dConfig} object.
    *
    * @return {@link Elevator2dConfig}
@@ -157,6 +175,7 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   public Elevator2dConfig clone() {
     return new Elevator2dConfig(m_name, m_color, m_initialLength, m_angleOffset, m_stageMaxLengths)
         .withLineWidth(m_lineWidth)
-        .withSuperStructureOffset(m_superStructureOffset);
+        .withSuperStructureOffset(m_superStructureOffset)
+        .withStageColors(m_stageColors);
   }
 }

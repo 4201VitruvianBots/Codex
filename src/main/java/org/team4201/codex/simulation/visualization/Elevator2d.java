@@ -12,6 +12,7 @@ import org.team4201.codex.simulation.visualization.configs.Elevator2dConfig;
 /** Class to represent an elevator using {@link Mechanism2d} */
 public class Elevator2d implements AutoCloseable {
   private final Elevator2dConfig m_config;
+  private final MechanismLigament2d m_elevatorSuperStructure;
   private final MechanismLigament2d[] m_elevatorStages;
   private MechanismObject2d m_parentObject;
   private Elevator2d m_subElevator2d;
@@ -34,17 +35,25 @@ public class Elevator2d implements AutoCloseable {
    */
   public Elevator2d(Elevator2dConfig config, MechanismObject2d parentObject) {
     m_config = config;
-
+    m_elevatorSuperStructure =
+        new MechanismLigament2d(
+            m_config.m_name,
+            m_config.m_superStructureOffset.in(Inches),
+            m_config.m_angleOffset.in(Degrees),
+            m_config.m_lineWidth,
+            m_config.m_color);
     m_elevatorStages = new MechanismLigament2d[m_config.m_numberOfStages];
     for (int i = 0; i < m_elevatorStages.length; i++) {
       m_elevatorStages[i] =
           new MechanismLigament2d(
-              m_config.m_name + "_" + i,
+              m_config.m_name + "_Stage" + i,
               m_config.m_initialLength.in(Inches),
-              m_config.m_angleOffset.in(Degrees),
+              0,
               m_config.m_lineWidth,
               m_config.m_color);
-      if (i > 0) {
+      if (i == 0) {
+        m_elevatorSuperStructure.append(m_elevatorStages[0]);
+      } else {
         m_elevatorStages[i - 1].append(m_elevatorStages[i]);
       }
     }
@@ -61,7 +70,7 @@ public class Elevator2d implements AutoCloseable {
    * robot
    */
   public void generateSubDisplay() {
-    Distance totalDistance = Inches.of(0);
+    Distance totalDistance = m_config.m_superStructureOffset.copy();
     for (int i = 0; i < m_config.m_numberOfStages; i++) {
       totalDistance = totalDistance.plus(m_config.m_stageMaxLengths[i]);
     }
@@ -121,7 +130,7 @@ public class Elevator2d implements AutoCloseable {
    * @return {@link MechanismLigament2d}
    */
   public MechanismLigament2d getLigament() {
-    return m_elevatorStages[0];
+    return m_elevatorSuperStructure;
   }
 
   /**
@@ -130,8 +139,17 @@ public class Elevator2d implements AutoCloseable {
    * @param index The stage index to return
    * @return {@link MechanismLigament2d}
    */
-  public MechanismLigament2d getLigament(int index) {
+  public MechanismLigament2d getStageLigament(int index) {
     return m_elevatorStages[index];
+  }
+
+  /**
+   * Get the last {@link Elevator2d}'s {@link MechanismLigament2d} stage.
+   *
+   * @return {@link MechanismLigament2d}
+   */
+  public MechanismLigament2d getLastStageLigament() {
+    return m_elevatorStages[m_elevatorStages.length - 1];
   }
 
   /**
@@ -160,10 +178,11 @@ public class Elevator2d implements AutoCloseable {
    * @param subAngle Angle of the Elevator2d's subMechanism.
    */
   public void setAngle(Angle angle, Angle subAngle) {
-    getLigament().setAngle(angle.in(Degrees));
+    m_config.m_angleOffset = angle;
+    m_elevatorSuperStructure.setAngle(m_config.m_angleOffset.in(Degrees));
 
     if (m_subElevator2d != null) {
-      m_subElevator2d.getLigament().setAngle(subAngle.in(Degrees));
+      m_subElevator2d.setAngle(subAngle);
     }
   }
 
@@ -184,6 +203,9 @@ public class Elevator2d implements AutoCloseable {
    *     Elevator2d} for visualization.
    */
   public void update(Distance height, LinearVelocity velocity) {
+    m_elevatorSuperStructure.setLength(m_config.m_superStructureOffset.in(Inches));
+    m_elevatorSuperStructure.setAngle(m_config.m_angleOffset.in(Degrees));
+
     switch (m_config.m_type) {
       case CONTINUOUS:
         var subHeight = height.copy();
@@ -200,20 +222,13 @@ public class Elevator2d implements AutoCloseable {
       case CASCADE:
       default:
         for (int i = 0; i < m_config.m_numberOfStages; i++) {
-          if (i == 0) {
-            m_elevatorStages[i].setLength(
-                m_config
-                    .m_superStructureOffset
-                    .plus(height.div(m_config.m_numberOfStages))
-                    .in(Inches));
-          } else {
-            m_elevatorStages[i].setLength(height.div(m_config.m_numberOfStages).in(Inches));
-          }
+          m_elevatorStages[i].setLength(height.div(m_config.m_numberOfStages).in(Inches));
         }
     }
 
-    for (var stage : m_elevatorStages) {
-      VisualizationUtils.updateMotorColor(stage, velocity.in(FeetPerSecond), m_config.m_color);
+    for (int i = 0; i < m_config.m_numberOfStages; i++) {
+      VisualizationUtils.updateMotorColor(
+          m_elevatorStages[i], velocity.in(FeetPerSecond), m_config.m_stageColors[i]);
     }
 
     if (m_subElevator2d != null) {

@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.team4201.codex.simulation.FieldSim;
 import org.team4201.codex.simulation.visualization.Arm2d;
@@ -22,8 +23,13 @@ public class Robot extends TimedRobot {
 
   Mechanism2d testBot = new Mechanism2d(30, 30);
   MechanismRoot2d superStructureRoot = testBot.getRoot("superStructureRoot", 15, 1);
-  Elevator2d elevator2d = new Elevator2d(new Elevator2dConfig("testElevator"), superStructureRoot);
-  Arm2d arm2d = new Arm2d(new Arm2dConfig("testArm"), elevator2d.getLigament());
+  Elevator2d elevator2d =
+      new Elevator2d(
+          new Elevator2dConfig("testElevator")
+              .withSuperStructureOffset(Inches.of(3))
+              .withStageColors(new Color8Bit(255, 0, 0)),
+          superStructureRoot);
+  Arm2d arm2d = new Arm2d(new Arm2dConfig("testArm"), elevator2d.getLastStageLigament());
   Flywheel2d flywheel2d = new Flywheel2d(new Flywheel2dConfig("testFlywheel"), arm2d.getLigament());
 
   /**
@@ -103,7 +109,7 @@ public class Robot extends TimedRobot {
     //        System.out.println("Arm2d Angle: " + arm2d.getLigament().getAngle());
     //        System.out.println("Flywheel2d Angle: " + flywheel2d.getLigament().getAngle());
     arm2d.update(Radians.of(Math.sin(Timer.getFPGATimestamp() % (2 * Math.PI))));
-    elevator2d.update(Inches.of(Math.abs(Math.sin(Timer.getFPGATimestamp() % (2 * Math.PI))) * 24));
+    elevator2d.update(Inches.of(Math.abs(Math.sin(Timer.getFPGATimestamp() % (2 * Math.PI))) * 12));
     flywheel2d.update(RotationsPerSecond.of(6 * Timer.getFPGATimestamp()));
 
     fieldSim.simulationPeriodic();
