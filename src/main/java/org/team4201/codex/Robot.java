@@ -36,26 +36,11 @@ public class Robot extends TimedRobot {
       throw new RuntimeException("Codex is run as robot code!");
     }
 
-    Mechanism2d elevatorMechanism = new Mechanism2d(10, 30);
-    elevator2d.setAngle(Degree.of(90));
-    elevatorMechanism
-        .getRoot("elevatorRoot", 5, 1)
-        .append(elevator2d.getSubElevator().getLigament());
-
-    Mechanism2d armMechanism = new Mechanism2d(15, 15);
-    arm2d.setAngle(Degree.of(90));
-    arm2d.getArmSubMechanism().getConfig().withAngleOffset(Degree.of(90));
-    armMechanism.getRoot("armRoot", 7.5, 1).append(arm2d.getArmSubMechanism().getLigament());
-
-    Mechanism2d flywheelMechanism = new Mechanism2d(5, 5);
-    flywheelMechanism
-        .getRoot("flywheelRoot", 2.5, 2.5)
-        .append(flywheel2d.getSubFlywheel().getLigament());
+    elevator2d.generateSubDisplay();
+    arm2d.generateSubDisplay();
+    flywheel2d.generateSubDisplay();
 
     SmartDashboard.putData("testBot", testBot);
-    SmartDashboard.putData("elevator", elevatorMechanism);
-    SmartDashboard.putData("arm", armMechanism);
-    SmartDashboard.putData("flywheel", flywheelMechanism);
   }
 
   /**

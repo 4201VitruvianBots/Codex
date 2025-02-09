@@ -7,11 +7,9 @@ package org.team4201.codex.simulation.visualization;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 import org.team4201.codex.simulation.visualization.configs.Flywheel2dConfig;
 
 /** Class to represent a flywheel using {@link Mechanism2d} */
@@ -50,9 +48,6 @@ public class Flywheel2d implements AutoCloseable {
     if (parentObject != null) {
       m_parentObject = parentObject;
 
-      Flywheel2dConfig flywheelSubConfig = m_config.clone();
-      flywheelSubConfig.m_name = flywheelSubConfig.m_name + "_sub";
-      m_subFlywheel2d = new Flywheel2d(flywheelSubConfig);
       m_parentObject.append(m_flywheel);
     }
   }
@@ -65,7 +60,7 @@ public class Flywheel2d implements AutoCloseable {
                 m_config.m_name + "_side" + i,
                 m_config.m_initialRadius.in(Inches),
                 112.5,
-                3,
+                m_config.m_lineWidth,
                 m_config.m_color);
         m_flywheel.append(m_sides[i]);
       } else {
@@ -74,11 +69,58 @@ public class Flywheel2d implements AutoCloseable {
                 m_config.m_name + "_side" + i,
                 m_config.m_initialRadius.in(Inches),
                 45,
-                3,
+                m_config.m_lineWidth,
                 m_config.m_color);
         m_sides[i - 1].append(m_sides[i]);
       }
     }
+  }
+
+  /**
+   * Make a copy of the {@link Flywheel2d} on its own Mechanism2d display separate from the main
+   * robot
+   */
+  public void generateSubDisplay() {
+    var defaultMechanism2dDimensions =
+        new Translation2d(m_config.m_initialRadius.in(Inches), m_config.m_initialRadius.in(Inches))
+            .times(1.2);
+    generateSubDisplay(defaultMechanism2dDimensions);
+  }
+
+  /**
+   * Make a copy of the {@link Flywheel2d} on its own Mechanism2d display separate from the main
+   * robot
+   *
+   * @param displayDimensions A {@link Translation2d} that contains the X/Y dimensions of the {@link
+   *     Mechanism2d}
+   */
+  public void generateSubDisplay(Translation2d displayDimensions) {
+    var defaultMechanism2dRootPosition = displayDimensions.times(0.5);
+    generateSubDisplay(displayDimensions, defaultMechanism2dRootPosition);
+  }
+
+  /**
+   * Make a copy of the {@link Flywheel2d} on its own Mechanism2d display separate from the main
+   * robot
+   *
+   * @param displayDimensions A {@link Translation2d} that contains the X/Y dimensions of the {@link
+   *     Mechanism2d}
+   * @param rootPosition A {@link Translation2d} that contains the X/Y position of the {@link
+   *     Mechanism2d}
+   */
+  public void generateSubDisplay(Translation2d displayDimensions, Translation2d rootPosition) {
+    Flywheel2dConfig flywheelSubConfig = m_config.clone();
+    flywheelSubConfig.m_name = flywheelSubConfig.m_name + "_sub";
+    m_subFlywheel2d = new Flywheel2d(flywheelSubConfig);
+
+    Mechanism2d subFlywheelDisplay =
+        new Mechanism2d(displayDimensions.getX(), displayDimensions.getY());
+    subFlywheelDisplay
+        .getRoot(m_subFlywheel2d + "Root", rootPosition.getX(), rootPosition.getY())
+        .append(m_subFlywheel2d.getLigament());
+    ;
+
+    SmartDashboard.putData(flywheelSubConfig.m_name, subFlywheelDisplay);
   }
 
   /**

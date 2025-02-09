@@ -2,13 +2,11 @@ package org.team4201.codex.simulation.visualization;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 import org.team4201.codex.simulation.visualization.configs.Arm2dConfig;
 
 /** Class to represent an arm using {@link Mechanism2d} */
@@ -50,11 +48,51 @@ public class Arm2d implements AutoCloseable {
     if (parentObject != null) {
       m_parentObject = parentObject;
 
-      Arm2dConfig armSubConfig = m_config.clone();
-      armSubConfig.m_name = armSubConfig.m_name + "_sub";
-      m_subArm2d = new Arm2d(armSubConfig);
       m_parentObject.append(m_arm2d);
     }
+  }
+
+  /**
+   * Make a copy of the {@link Arm2d} on its own Mechanism2d display separate from the main robot
+   */
+  public void generateSubDisplay() {
+    var defaultMechanism2dDimensions =
+        new Translation2d(m_config.m_maxLength.in(Inches), m_config.m_maxLength.in(Inches))
+            .times(1.2);
+    generateSubDisplay(defaultMechanism2dDimensions);
+  }
+
+  /**
+   * Make a copy of the {@link Arm2d} on its own Mechanism2d display separate from the main robot
+   *
+   * @param displayDimensions A {@link Translation2d} that contains the X/Y dimensions of the {@link
+   *     Mechanism2d}
+   */
+  public void generateSubDisplay(Translation2d displayDimensions) {
+    var defaultMechanism2dRootPosition = displayDimensions.times(0.5);
+    generateSubDisplay(displayDimensions, defaultMechanism2dRootPosition);
+  }
+
+  /**
+   * Make a copy of the {@link Arm2d} on its own Mechanism2d display separate from the main robot
+   *
+   * @param displayDimensions A {@link Translation2d} that contains the X/Y dimensions of the {@link
+   *     Mechanism2d}
+   * @param rootPosition A {@link Translation2d} that contains the X/Y position of the {@link
+   *     Mechanism2d}
+   */
+  public void generateSubDisplay(Translation2d displayDimensions, Translation2d rootPosition) {
+    Arm2dConfig armSubConfig = m_config.clone();
+    armSubConfig.m_name = armSubConfig.m_name + "_sub";
+    m_subArm2d = new Arm2d(armSubConfig);
+
+    Mechanism2d subArmDisplay = new Mechanism2d(displayDimensions.getX(), displayDimensions.getY());
+    subArmDisplay
+        .getRoot(m_subArm2d + "Root", rootPosition.getX(), rootPosition.getY())
+        .append(m_subArm2d.getLigament());
+    ;
+
+    SmartDashboard.putData(armSubConfig.m_name, subArmDisplay);
   }
 
   /**

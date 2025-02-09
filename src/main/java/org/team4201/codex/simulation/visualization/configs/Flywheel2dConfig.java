@@ -12,6 +12,12 @@ public class Flywheel2dConfig extends BaseMechanismConfig {
   /** Initial radius of the flywheel. Default is 2 inches if not set */
   public Distance m_initialRadius;
 
+  /** Max radius of the flywheel. Defaults to the value of m_initialRadius if not set */
+  public Distance m_maxRadius;
+
+  /** Line width (thickness) of the flywheel. This is in pixels of the Mechanism2d */
+  public double m_lineWidth = 3;
+
   /**
    * Initialize a config for the {@link Flywheel2d}.
    *
@@ -42,6 +48,18 @@ public class Flywheel2dConfig extends BaseMechanismConfig {
     super(name, color);
 
     m_initialRadius = initialRadius;
+    m_maxRadius = m_initialRadius;
+  }
+
+  /**
+   * Set the max radius of the {@link Flywheel2d}.
+   *
+   * @param maxRadius The max radius of the Flywheel. Defaults to the Flywheel's initial radius
+   * @return this
+   */
+  public Flywheel2dConfig withMaxRadius(Distance maxRadius) {
+    this.m_maxRadius = maxRadius;
+    return this;
   }
 
   /**

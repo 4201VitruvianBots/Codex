@@ -22,7 +22,10 @@ public class Arm2dConfig extends BaseMechanismConfig {
   public Angle m_angleOffset = Degrees.of(0);
 
   /** Line width (thickness) of the arm. This is in pixels per inch of the Mechanism2d */
-  public double m_lineWidth;
+  public double m_lineWidth = 3;
+
+  /** Max length of the arm */
+  public Distance m_maxLength;
 
   /**
    * Initialize a config for the {@link Arm2d}.
@@ -31,6 +34,7 @@ public class Arm2dConfig extends BaseMechanismConfig {
    */
   public Arm2dConfig(String name) {
     this(name, new Color8Bit(255, 255, 255), Degrees.of(0), Inches.of(12));
+    this.m_lineWidth = 5;
   }
 
   /**
@@ -46,6 +50,7 @@ public class Arm2dConfig extends BaseMechanismConfig {
 
     m_initialAngle = initialAngle;
     m_initialLength = initialLength;
+    m_maxLength = m_initialLength;
   }
 
   /**
@@ -68,6 +73,17 @@ public class Arm2dConfig extends BaseMechanismConfig {
    */
   public Arm2dConfig withLineWidth(double lineWidth) {
     this.m_lineWidth = lineWidth;
+    return this;
+  }
+
+  /**
+   * Set the max length of the {@link Arm2d}.
+   *
+   * @param maxLength The max length of the Arm. Defaults to the Arm's initial length
+   * @return this
+   */
+  public Arm2dConfig withMaxLength(Distance maxLength) {
+    this.m_maxLength = maxLength;
     return this;
   }
 

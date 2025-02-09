@@ -2,13 +2,11 @@ package org.team4201.codex.simulation.visualization;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 import org.team4201.codex.simulation.visualization.configs.Elevator2dConfig;
 
 /** Class to represent an elevator using {@link Mechanism2d} */
@@ -54,11 +52,58 @@ public class Elevator2d implements AutoCloseable {
     if (parentObject != null) {
       m_parentObject = parentObject;
 
-      Elevator2dConfig elevatorSubConfig = m_config.clone();
-      elevatorSubConfig.m_name = elevatorSubConfig.m_name + "_sub";
-      m_subElevator2d = new Elevator2d(elevatorSubConfig);
       m_parentObject.append(getLigament());
     }
+  }
+
+  /**
+   * Make a copy of the {@link Elevator2d} on its own Mechanism2d display separate from the main
+   * robot
+   */
+  public void generateSubDisplay() {
+    Distance totalDistance = Inches.of(0);
+    for (int i = 0; i < m_config.m_numberOfStages; i++) {
+      totalDistance = totalDistance.plus(m_config.m_stageMaxLengths[i]);
+    }
+    var defaultMechanism2dDimensions =
+        new Translation2d(totalDistance.in(Inches), totalDistance.in(Inches)).times(1.2);
+    generateSubDisplay(defaultMechanism2dDimensions);
+  }
+
+  /**
+   * Make a copy of the {@link Elevator2d} on its own Mechanism2d display separate from the main
+   * robot
+   *
+   * @param displayDimensions A {@link Translation2d} that contains the X/Y dimensions of the {@link
+   *     Mechanism2d}
+   */
+  public void generateSubDisplay(Translation2d displayDimensions) {
+    var defaultMechanism2dRootPosition = displayDimensions.times(0.5);
+    generateSubDisplay(
+        displayDimensions, new Translation2d(defaultMechanism2dRootPosition.getX(), 0));
+  }
+
+  /**
+   * Make a copy of the {@link Elevator2d} on its own Mechanism2d display separate from the main
+   * robot
+   *
+   * @param displayDimensions A {@link Translation2d} that contains the X/Y dimensions of the {@link
+   *     Mechanism2d}
+   * @param rootPosition A {@link Translation2d} that contains the X/Y position of the {@link
+   *     Mechanism2d}
+   */
+  public void generateSubDisplay(Translation2d displayDimensions, Translation2d rootPosition) {
+    Elevator2dConfig elevatorSubConfig = m_config.clone();
+    elevatorSubConfig.m_name = elevatorSubConfig.m_name + "_sub";
+    m_subElevator2d = new Elevator2d(elevatorSubConfig);
+
+    Mechanism2d subElevatorDisplay =
+        new Mechanism2d(displayDimensions.getX(), displayDimensions.getY());
+    subElevatorDisplay
+        .getRoot(m_subElevator2d + "Root", rootPosition.getX(), rootPosition.getY())
+        .append(m_subElevator2d.getLigament());
+
+    SmartDashboard.putData(elevatorSubConfig.m_name, subElevatorDisplay);
   }
 
   /**

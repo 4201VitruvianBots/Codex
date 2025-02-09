@@ -1,7 +1,6 @@
 package org.team4201.codex.simulation.visualization.configs;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -29,7 +28,7 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   public ELEVATOR_TYPE m_type = ELEVATOR_TYPE.CASCADE;
 
   /** Line width (thickness) of the elevator. This is in pixels of the Mechanism2d */
-  public double m_lineWidth;
+  public double m_lineWidth = 3;
 
   /**
    * Initialize a config for the {@link Elevator2d}.
@@ -37,7 +36,7 @@ public class Elevator2dConfig extends BaseMechanismConfig {
    * @param name Name of the mechanism
    */
   public Elevator2dConfig(String name) {
-    this(name, new Color8Bit(255, 0, 0), Inches.of(24));
+    this(name, new Color8Bit(255, 0, 0), Inches.of(24), Degrees.of(90), Inches.of(24));
   }
 
   /**
@@ -61,7 +60,8 @@ public class Elevator2dConfig extends BaseMechanismConfig {
    */
   public Elevator2dConfig(
       String name, Color8Bit color, Distance initialLength, Angle initialAngleOffset) {
-    this(name, color, initialLength, initialAngleOffset, 1);
+    this(name, color, initialLength, initialAngleOffset, initialLength);
+    this.m_stageMaxLengths = new Distance[] {Inches.of(12)};
   }
 
   /**
@@ -71,19 +71,20 @@ public class Elevator2dConfig extends BaseMechanismConfig {
    * @param color {@link Color8Bit} to use for the mechanism
    * @param initialLength Initial length of the Elevator2d
    * @param initialAngleOffset Initial angle offset.
-   * @param numberOfStages Number of stages in the Elevator2d. Default is 1
+   * @param maxStageLengths Maximum extension of each stage. Defaults to the initialLength
    */
   public Elevator2dConfig(
       String name,
       Color8Bit color,
       Distance initialLength,
       Angle initialAngleOffset,
-      int numberOfStages) {
+      Distance... maxStageLengths) {
     super(name, color);
 
     m_initialLength = initialLength;
     m_angleOffset = initialAngleOffset;
-    m_numberOfStages = numberOfStages;
+    m_stageMaxLengths = maxStageLengths;
+    m_numberOfStages = maxStageLengths.length;
   }
 
   /**
@@ -94,19 +95,6 @@ public class Elevator2dConfig extends BaseMechanismConfig {
    */
   public Elevator2dConfig withAngleOffset(Angle angleOffset) {
     this.m_angleOffset = angleOffset;
-    return this;
-  }
-
-  /**
-   * Set the max length for each stage for the {@link Elevator2d} (For visualization). Must be set
-   * for CONTINUOUS elevators.
-   *
-   * @param stageMaxLengths The max {@link Distance} each stage can can reach.
-   * @return this
-   */
-  public Elevator2dConfig withStageMaxLengths(Distance... stageMaxLengths) {
-    this.m_stageMaxLengths = stageMaxLengths;
-    this.m_numberOfStages = m_stageMaxLengths.length;
     return this;
   }
 
@@ -134,11 +122,24 @@ public class Elevator2dConfig extends BaseMechanismConfig {
   }
 
   /**
+   * Set the max length for each stage for the {@link Elevator2d} (For visualization). Must be set
+   * for CONTINUOUS elevators.
+   *
+   * @param stageMaxLengths The max {@link Distance} each stage can can reach.
+   * @return this
+   */
+  public Elevator2dConfig withStageMaxLengths(Distance... stageMaxLengths) {
+    this.m_stageMaxLengths = stageMaxLengths;
+    this.m_numberOfStages = m_stageMaxLengths.length;
+    return this;
+  }
+
+  /**
    * Copy the {@link Elevator2dConfig} object.
    *
    * @return {@link Elevator2dConfig}
    */
   public Elevator2dConfig clone() {
-    return new Elevator2dConfig(m_name, m_color, m_initialLength, m_angleOffset, m_numberOfStages);
+    return new Elevator2dConfig(m_name, m_color, m_initialLength, m_angleOffset, m_stageMaxLengths);
   }
 }
