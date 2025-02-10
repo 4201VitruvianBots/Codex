@@ -32,7 +32,7 @@ public class Arm2d implements AutoCloseable {
    * @param parentObject The {@link MechanismObject2d} (Either a {@link MechanismRoot2d} or {@link
    *     MechanismLigament2d})the Arm2d attaches to
    */
-  public Arm2d(Arm2dConfig config, MechanismLigament2d parentObject) {
+  public Arm2d(Arm2dConfig config, MechanismObject2d parentObject) {
     m_config = config;
 
     // Create a "line" to represent the arm.
