@@ -5,8 +5,6 @@
 package org.team4201.codex.utils;
 
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,27 +23,14 @@ import org.team4201.codex.subsystems.SwerveSubsystem;
  */
 public class TrajectoryUtils {
   private final SwerveSubsystem m_swerveDrive;
-  private final RobotConfig m_robotConfig;
-  private final PIDConstants m_translationPIDConstants;
-  private final PIDConstants m_rotationPIDConstants;
 
   /**
    * Construct a {@link TrajectoryUtils} object to manage trajectory following.
    *
    * @param swerveDrive The {@link SwerveSubsystem}
-   * @param robotConfig The PathPlanner {@link RobotConfig}
-   * @param translationPIDConstants The PathPlanner translation {@link PIDConstants}
-   * @param rotationPIDConstants The PathPlanner rotation {@link PIDConstants}
    */
-  public TrajectoryUtils(
-      SwerveSubsystem swerveDrive,
-      RobotConfig robotConfig,
-      PIDConstants translationPIDConstants,
-      PIDConstants rotationPIDConstants) {
+  public TrajectoryUtils(SwerveSubsystem swerveDrive) {
     m_swerveDrive = swerveDrive;
-    m_robotConfig = robotConfig;
-    m_translationPIDConstants = translationPIDConstants;
-    m_rotationPIDConstants = rotationPIDConstants;
   }
 
   /**
@@ -56,8 +41,7 @@ public class TrajectoryUtils {
    */
   public Command generatePPHolonomicCommand(String pathName) {
     try {
-      return generatePPHolonomicCommand(
-          PathPlannerPath.fromPathFile(pathName), m_robotConfig, false);
+      return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), false);
     } catch (Exception e) {
       DriverStation.reportError(
           "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
@@ -76,8 +60,7 @@ public class TrajectoryUtils {
    */
   public Command generatePPHolonomicCommand(String pathName, boolean manualFlip) {
     try {
-      return generatePPHolonomicCommand(
-          PathPlannerPath.fromPathFile(pathName), m_robotConfig, manualFlip);
+      return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), manualFlip);
     } catch (Exception e) {
       DriverStation.reportError(
           "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
@@ -90,37 +73,30 @@ public class TrajectoryUtils {
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param path The {@link PathPlannerPath} to follow.
-   * @param robotConfig The {@link RobotConfig} to use.
    * @return Command
    */
-  public Command generatePPHolonomicCommand(PathPlannerPath path, RobotConfig robotConfig) {
+  public Command generatePPHolonomicCommand(PathPlannerPath path) {
 
-    return generatePPHolonomicCommand(path, robotConfig, false);
+    return generatePPHolonomicCommand(path, false);
   }
 
   /**
    * Generate a PathPlanner Command to follow a named PathPlanner trajectory file.
    *
    * @param path The {@link PathPlannerPath} to follow.
-   * @param robotConfig The {@link RobotConfig} to use
    * @param flipPath Option to flip the trajectory around the field's center.
    * @return Command
    */
-  public Command generatePPHolonomicCommand(
-      PathPlannerPath path, RobotConfig robotConfig, boolean flipPath) {
+  public Command generatePPHolonomicCommand(PathPlannerPath path, boolean flipPath) {
     return new FollowPathCommand(
         path,
         () -> m_swerveDrive.getState().Pose,
         () -> m_swerveDrive.getState().Speeds,
         m_swerveDrive::setChassisSpeedsAuto,
         new PPHolonomicDriveController(
-            new PIDConstants(
-                m_translationPIDConstants.kP,
-                m_translationPIDConstants.kI,
-                m_translationPIDConstants.kD),
-            new PIDConstants(
-                m_rotationPIDConstants.kP, m_rotationPIDConstants.kI, m_rotationPIDConstants.kD)),
-        robotConfig,
+            m_swerveDrive.getAutoTranslationPIDConstants(),
+            m_swerveDrive.getAutoRotationPIDConstants()),
+        m_swerveDrive.getAutoRobotConfig(),
         () -> flipPath,
         m_swerveDrive);
   }

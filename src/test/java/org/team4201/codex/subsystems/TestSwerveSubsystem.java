@@ -8,9 +8,13 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +63,22 @@ public class TestSwerveSubsystem {
         SwerveDrivetrainConstants driveConstants,
         SwerveModuleConstants<?, ?, ?>... moduleConstants) {
       super(TalonFX::new, TalonFX::new, CANcoder::new, driveConstants, moduleConstants);
+    }
+
+    @Override
+    public RobotConfig getAutoRobotConfig() {
+      return new RobotConfig(
+          5, 5, new ModuleConfig(0.2, 4, 1, DCMotor.getKrakenX60(1), 4, 1), getModuleLocations());
+    }
+
+    @Override
+    public PIDConstants getAutoTranslationPIDConstants() {
+      return new PIDConstants(1);
+    }
+
+    @Override
+    public PIDConstants getAutoRotationPIDConstants() {
+      return new PIDConstants(1);
     }
 
     @Override

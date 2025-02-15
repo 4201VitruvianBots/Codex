@@ -5,16 +5,12 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.system.plant.DCMotor;
 import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,19 +55,7 @@ public class TestTrajectoryUtils {
     TestSwerveSubsystem.SwerveDrive swerveDrive =
         new TestSwerveSubsystem.SwerveDrive(driveConstants, moduleConstants);
 
-    var trajectoryUtils =
-        new TrajectoryUtils(
-            swerveDrive,
-            new RobotConfig(
-                0,
-                0,
-                new ModuleConfig(0, 0, 0, DCMotor.getKrakenX60(1), 0, 0),
-                new Translation2d(0.5, 0.5),
-                new Translation2d(0.5, -0.5),
-                new Translation2d(-0.5, 0.5),
-                new Translation2d(-0.5, -0.5)),
-            new PIDConstants(0),
-            new PIDConstants(0));
+    var trajectoryUtils = new TrajectoryUtils(swerveDrive);
 
     var pathPoints = new ArrayList<PathPoint>();
     pathPoints.add(new PathPoint(new Translation2d(0, 0)));

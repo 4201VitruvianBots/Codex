@@ -2,10 +2,17 @@ package org.team4201.codex;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPoint;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import java.util.ArrayList;
 import org.team4201.codex.simulation.FieldSim;
 import org.team4201.codex.simulation.visualization.Arm2d;
 import org.team4201.codex.simulation.visualization.Elevator2d;
@@ -13,6 +20,8 @@ import org.team4201.codex.simulation.visualization.Flywheel2d;
 import org.team4201.codex.simulation.visualization.configs.Arm2dConfig;
 import org.team4201.codex.simulation.visualization.configs.Elevator2dConfig;
 import org.team4201.codex.simulation.visualization.configs.Flywheel2dConfig;
+import org.team4201.codex.subsystems.MockSwerveSubsystem;
+import org.team4201.codex.utils.TrajectoryUtils;
 
 /**
  * This is NOT meant for running full robot code. It is meant for testing code that can't be easily
@@ -47,6 +56,20 @@ public class Robot extends TimedRobot {
     flywheel2d.generateSubDisplay();
 
     SmartDashboard.putData("testBot", testBot);
+
+    MockSwerveSubsystem swerveSubsystem = new MockSwerveSubsystem();
+    TrajectoryUtils trajectoryUtils = new TrajectoryUtils(swerveSubsystem);
+
+    var pathPoints = new ArrayList<PathPoint>();
+    pathPoints.add(new PathPoint(new Translation2d(0, 0)));
+    pathPoints.add(new PathPoint(new Translation2d(10, 0)));
+
+    var path =
+        PathPlannerPath.fromPathPoints(
+            pathPoints, new PathConstraints(1, 1, 1, 1, 12), new GoalEndState(0, new Rotation2d()));
+
+    var trajectory = trajectoryUtils.getTrajectoryFromPathPlanner(path);
+    fieldSim.addTrajectory(trajectory);
   }
 
   /**
