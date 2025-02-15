@@ -6,17 +6,31 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /** Class to handle all updates to the Field2D widget */
 public class FieldSim extends SubsystemBase implements AutoCloseable {
+
+  /** Enum of common {@link Field2d} objects */
+  public enum FIELD_OBJECTS {
+    /** robotPose */
+    robotPose,
+    /** modulePoses */
+    modulePoses;
+
+    /**
+     * Return keys as List of Strings
+     *
+     * @return List of Strings
+     */
+    public static List<String> keysAsStrings() {
+      return Arrays.stream(FIELD_OBJECTS.values()).map(Enum::toString).toList();
+    }
+  };
+
   private final Field2d m_field2D = new Field2d();
 
   private final Map<String, Pose2d[]> m_objectPoses = new HashMap<>();
-
-  private final String[] m_protectedKeys = {"robotPose", "modulePoses"};
 
   /** Create a FieldSim object */
   public FieldSim() {
@@ -75,9 +89,8 @@ public class FieldSim extends SubsystemBase implements AutoCloseable {
       m_field2D.setRobotPose(m_objectPoses.get("robotPose")[0]);
 
     for (var entry : m_objectPoses.entrySet()) {
-      if (Arrays.asList(m_protectedKeys).contains(entry.getKey())) {
-        continue;
-      }
+      if (FIELD_OBJECTS.keysAsStrings().contains(entry.getKey())) continue;
+
       m_field2D.getObject(entry.getKey()).setPoses(entry.getValue());
     }
 
