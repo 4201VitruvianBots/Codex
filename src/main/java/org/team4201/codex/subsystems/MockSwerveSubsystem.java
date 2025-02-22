@@ -5,6 +5,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -53,6 +54,9 @@ public class MockSwerveSubsystem implements SwerveSubsystem {
   public SwerveDrivetrain.SwerveDriveState getState() {
     return new SwerveDrivetrain.SwerveDriveState();
   }
+
+  @Override
+  public void resetPose(Pose2d pose) {}
 
   @Override
   public void setChassisSpeedsAuto(ChassisSpeeds chassisSpeeds, DriveFeedforwards feedforwards) {}

@@ -4,17 +4,26 @@
 
 package org.team4201.codex.utils;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import org.team4201.codex.subsystems.SwerveSubsystem;
 
@@ -23,6 +32,18 @@ import org.team4201.codex.subsystems.SwerveSubsystem;
  * href="https://github.com/mjansen4857/pathplanner">PathPlanner</a>.
  */
 public class TrajectoryUtils {
+  /** Field layout to get field dimensions TODO: Add ability to update this */
+  public static final AprilTagFieldLayout wpilibAprilTagLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+
+  /** Field X-axis */
+  public static final Distance LENGTH = Meters.of(wpilibAprilTagLayout.getFieldLength());
+
+  /** Field Y-axis */
+  public static final Distance WIDTH = Meters.of(wpilibAprilTagLayout.getFieldWidth());
+
+  private final Translation2d m_fieldCenter =
+      new Translation2d(LENGTH.div(2).in(Meters), WIDTH.div(2).in(Meters));
   private final SwerveSubsystem m_swerveDrive;
 
   /**
@@ -100,6 +121,52 @@ public class TrajectoryUtils {
             m_swerveDrive.getAutoRotationPIDConstants()),
         m_swerveDrive.getAutoRobotConfig(),
         flipPath,
+        m_swerveDrive);
+  }
+
+  /**
+   * Reset the robot's initial pose for auto.
+   *
+   * @param pathName The name of the {@link PathPlannerPath} containing the initial {@link Pose2d}.
+   * @return Command
+   */
+  public Command resetRobotPoseAuto(String pathName) {
+    try {
+      return resetRobotPoseAuto(PathPlannerPath.fromPathFile(pathName));
+    } catch (Exception e) {
+      DriverStation.reportError(
+          "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
+          e.getStackTrace());
+      return new WaitCommand(0);
+    }
+  }
+
+  /**
+   * Reset the robot's initial pose for auto.
+   *
+   * @param path The {@link PathPlannerPath} containing the initial {@link Pose2d}.
+   * @return Command
+   */
+  public Command resetRobotPoseAuto(PathPlannerPath path) {
+    return new InstantCommand(
+        () -> {
+          var pathStartingPose = path.getStartingHolonomicPose();
+          AtomicReference<Pose2d> startingPose = new AtomicReference<>(new Pose2d());
+
+          pathStartingPose.ifPresent(
+              (p) -> {
+                if (flipPathByAlliance()) {
+                  startingPose.set(
+                      new Pose2d(
+                          p.getTranslation().rotateAround(m_fieldCenter, Rotation2d.k180deg),
+                          p.getRotation().rotateBy(Rotation2d.k180deg)));
+                } else {
+                  startingPose.set(p);
+                }
+              });
+
+          m_swerveDrive.resetPose(startingPose.get());
+        },
         m_swerveDrive);
   }
 
