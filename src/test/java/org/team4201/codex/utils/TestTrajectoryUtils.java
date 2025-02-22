@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.ArrayList;
@@ -55,7 +54,6 @@ public class TestTrajectoryUtils {
   @Test
   public void testTrajectoryRotationalFlip() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
-    var trajectoryConfig = new TrajectoryConfig(1, 1);
     var pathPoints = new ArrayList<PathPoint>();
     pathPoints.add(
         new PathPoint(
@@ -68,16 +66,14 @@ public class TestTrajectoryUtils {
         PathPlannerPath.fromPathPoints(
             pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.kZero));
 
-    var blueTrajectory =
-        m_trajectoryUtils.getTrajectoryFromPathPlanner(trajectoryConfig, false, path);
+    var blueTrajectory = m_trajectoryUtils.getTrajectoryFromPathPlanner(() -> false, path);
 
     var blueEndPose = new Pose2d(pathPoints.get(pathPoints.size() - 1).position, Rotation2d.kZero);
 
     assertEquals(
         blueEndPose, blueTrajectory.sample(blueTrajectory.getTotalTimeSeconds()).poseMeters);
 
-    var redTrajectory =
-        m_trajectoryUtils.getTrajectoryFromPathPlanner(trajectoryConfig, true, path);
+    var redTrajectory = m_trajectoryUtils.getTrajectoryFromPathPlanner(() -> true, path);
 
     var redEndPose = FlippingUtil.flipFieldPose(blueEndPose);
 

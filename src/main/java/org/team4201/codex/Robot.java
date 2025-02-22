@@ -2,10 +2,7 @@ package org.team4201.codex;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.path.*;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
@@ -28,6 +25,8 @@ import org.team4201.codex.utils.TrajectoryUtils;
  * unit tested (e.g. {@link Mechanism2d}, {@link Field2d})
  */
 public class Robot extends TimedRobot {
+  MockSwerveSubsystem swerveDrive = new MockSwerveSubsystem();
+  TrajectoryUtils trajectoryUtils = new TrajectoryUtils(swerveDrive);
   FieldSim fieldSim = new FieldSim();
 
   Mechanism2d testBot = new Mechanism2d(30, 30);
@@ -56,20 +55,6 @@ public class Robot extends TimedRobot {
     flywheel2d.generateSubDisplay();
 
     SmartDashboard.putData("testBot", testBot);
-
-    MockSwerveSubsystem swerveSubsystem = new MockSwerveSubsystem();
-    TrajectoryUtils trajectoryUtils = new TrajectoryUtils(swerveSubsystem);
-
-    var pathPoints = new ArrayList<PathPoint>();
-    pathPoints.add(new PathPoint(new Translation2d(0, 0)));
-    pathPoints.add(new PathPoint(new Translation2d(10, 0)));
-
-    var path =
-        PathPlannerPath.fromPathPoints(
-            pathPoints, new PathConstraints(1, 1, 1, 1, 12), new GoalEndState(0, new Rotation2d()));
-
-    var trajectory = trajectoryUtils.getTrajectoryFromPathPlanner(path);
-    fieldSim.addTrajectory(trajectory);
   }
 
   /**
@@ -86,7 +71,7 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    fieldSim.simulationPeriodic();
+    fieldSim.periodic();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -98,7 +83,22 @@ public class Robot extends TimedRobot {
 
   /** This autonomous runs the autonomous command selected by your RobotContainer class. */
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+    var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
+    var pathPoints = new ArrayList<PathPoint>();
+    pathPoints.add(
+        new PathPoint(
+            new Translation2d(0, 1), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
+    pathPoints.add(
+        new PathPoint(
+            new Translation2d(4, 1), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
+
+    var path =
+        PathPlannerPath.fromPathPoints(
+            pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.kZero));
+
+    fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(path));
+  }
 
   /** This function is called periodically during autonomous. */
   @Override

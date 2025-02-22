@@ -137,18 +137,6 @@ public class TrajectoryUtils {
                 startingPose = FlippingUtil.flipFieldPose(startingPose);
               }
 
-              //          AtomicReference<Pose2d> startingPose = new
-              // AtomicReference<>(Pose2d.kZero);
-              //
-              //          pathStartingPose.ifPresent(
-              //              (p) -> {
-              //                if (flipPathByAlliance()) {
-              //                  startingPose.set(FlippingUtil.flipFieldPose(p));
-              //                } else {
-              //                  startingPose.set(p);
-              //                }
-              //              });
-
               m_swerveDrive.resetPose(startingPose);
             },
             m_swerveDrive)
@@ -163,41 +151,38 @@ public class TrajectoryUtils {
    * @return {@link Trajectory}
    */
   public Trajectory getTrajectoryFromPathPlanner(PathPlannerPath... paths) {
-    return getTrajectoryFromPathPlanner(new TrajectoryConfig(1, 1), paths);
+    return getTrajectoryFromPathPlanner(this::flipPathByAlliance, paths);
   }
 
   /**
    * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
    *
-   * @param config The WPILib {@link TrajectoryConfig}.
-   * @param paths the {@link PathPlannerPath}(s) to use
-   * @return {@link Trajectory}
-   */
-  public Trajectory getTrajectoryFromPathPlanner(
-      TrajectoryConfig config, PathPlannerPath... paths) {
-    return getTrajectoryFromPathPlanner(config, false, paths);
-  }
-
-  /**
-   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
-   *
-   * @param config The WPILib {@link TrajectoryConfig}.
    * @param flipPath Whether to flip the {@link PathPlannerPath} before displaying it.
    * @param paths the {@link PathPlannerPath}(s) to use
    * @return {@link Trajectory}
    */
   public Trajectory getTrajectoryFromPathPlanner(
-      TrajectoryConfig config, boolean flipPath, PathPlannerPath... paths) {
+      BooleanSupplier flipPath, PathPlannerPath... paths) {
+    return getTrajectoryFromPathPlanner(flipPath, new TrajectoryConfig(1, 1), paths);
+  }
+
+  /**
+   * Generate a WPILib {@link Trajectory} from PathPlanner's {@link PathPlannerPath}
+   *
+   * @param flipPath Whether to flip the {@link PathPlannerPath} before displaying it.
+   * @param config The WPILib {@link TrajectoryConfig}.
+   * @param paths the {@link PathPlannerPath}(s) to use
+   * @return {@link Trajectory}
+   */
+  public Trajectory getTrajectoryFromPathPlanner(
+      BooleanSupplier flipPath, TrajectoryConfig config, PathPlannerPath... paths) {
     var pathPoses = new ArrayList<Pose2d>();
 
     for (var path : paths) {
-      if (flipPath) {
+      if (flipPath.getAsBoolean()) {
         pathPoses.addAll(
             path.flipPath().getPathPoses().stream()
-                .map(
-                    p ->
-                        new Pose2d(
-                            p.getTranslation(), p.getRotation().rotateBy(Rotation2d.k180deg)))
+                .map(p -> new Pose2d(p.getTranslation(), p.getRotation().minus(Rotation2d.k180deg)))
                 .toList());
       } else {
         pathPoses.addAll(path.getPathPoses());
