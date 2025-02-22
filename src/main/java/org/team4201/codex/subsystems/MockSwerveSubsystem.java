@@ -45,6 +45,15 @@ public class MockSwerveSubsystem implements SwerveSubsystem {
   /** {@link MockSwerveSubsystem} constructor */
   public MockSwerveSubsystem() {}
 
+  /**
+   * Function to get pose for unit tests
+   *
+   * @return {@link Pose2d}
+   */
+  public Pose2d getPose() {
+    return m_swerveOdometry.getPoseMeters();
+  }
+
   @Override
   public Translation2d[] getModuleLocations() {
     return modulePositions;
@@ -71,7 +80,9 @@ public class MockSwerveSubsystem implements SwerveSubsystem {
   }
 
   @Override
-  public void resetPose(Pose2d pose) {}
+  public void resetPose(Pose2d pose) {
+    m_swerveOdometry.resetPose(pose);
+  }
 
   @Override
   public void setChassisSpeedsAuto(ChassisSpeeds chassisSpeeds, DriveFeedforwards feedforwards) {}

@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import org.team4201.codex.subsystems.SwerveSubsystem;
 
@@ -132,22 +131,28 @@ public class TrajectoryUtils {
    */
   public Command resetRobotPoseAuto(PathPlannerPath path) {
     return new InstantCommand(
-        () -> {
-          var pathStartingPose = path.getStartingHolonomicPose();
-          AtomicReference<Pose2d> startingPose = new AtomicReference<>(Pose2d.kZero);
+            () -> {
+              var startingPose = path.getStartingDifferentialPose();
+              if (flipPathByAlliance()) {
+                startingPose = FlippingUtil.flipFieldPose(startingPose);
+              }
 
-          pathStartingPose.ifPresent(
-              (p) -> {
-                if (flipPathByAlliance()) {
-                  startingPose.set(FlippingUtil.flipFieldPose(p));
-                } else {
-                  startingPose.set(p);
-                }
-              });
+              //          AtomicReference<Pose2d> startingPose = new
+              // AtomicReference<>(Pose2d.kZero);
+              //
+              //          pathStartingPose.ifPresent(
+              //              (p) -> {
+              //                if (flipPathByAlliance()) {
+              //                  startingPose.set(FlippingUtil.flipFieldPose(p));
+              //                } else {
+              //                  startingPose.set(p);
+              //                }
+              //              });
 
-          m_swerveDrive.resetPose(startingPose.get());
-        },
-        m_swerveDrive);
+              m_swerveDrive.resetPose(startingPose);
+            },
+            m_swerveDrive)
+        .ignoringDisable(true);
   }
 
   /**
