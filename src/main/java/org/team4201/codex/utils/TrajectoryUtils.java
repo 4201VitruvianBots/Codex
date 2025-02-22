@@ -131,14 +131,21 @@ public class TrajectoryUtils {
    */
   public Command resetRobotPoseAuto(PathPlannerPath path) {
     return new InstantCommand(
-            () -> {
-              var startingPose = path.getStartingDifferentialPose();
-              if (flipPathByAlliance()) {
-                startingPose = FlippingUtil.flipFieldPose(startingPose);
-              }
-
-              m_swerveDrive.resetPose(startingPose);
-            },
+            () ->
+                path.getStartingHolonomicPose()
+                    .ifPresentOrElse(
+                        p -> {
+                          if (flipPathByAlliance()) {
+                            p = FlippingUtil.flipFieldPose(p);
+                          }
+                          m_swerveDrive.resetPose(p);
+                        },
+                        () ->
+                            DriverStation.reportWarning(
+                                String.format(
+                                    "[TrajectoryUtils] Given path %s does not have a starting Holonomic Pose!",
+                                    path.name),
+                                false)),
             m_swerveDrive)
         .ignoringDisable(true);
   }

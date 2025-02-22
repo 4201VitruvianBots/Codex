@@ -3,13 +3,12 @@ package org.team4201.codex;
 import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.path.*;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import java.util.ArrayList;
 import org.team4201.codex.simulation.FieldSim;
 import org.team4201.codex.simulation.visualization.Arm2d;
 import org.team4201.codex.simulation.visualization.Elevator2d;
@@ -71,6 +70,7 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    fieldSim.addPoses("robotPose", swerveDrive.getPose());
     fieldSim.periodic();
   }
 
@@ -85,19 +85,18 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
-    var pathPoints = new ArrayList<PathPoint>();
-    pathPoints.add(
-        new PathPoint(
-            new Translation2d(0, 1), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
-    pathPoints.add(
-        new PathPoint(
-            new Translation2d(4, 1), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
-
+    var waypoints =
+        PathPlannerPath.waypointsFromPoses(
+            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
     var path =
-        PathPlannerPath.fromPathPoints(
-            pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.kZero));
+        new PathPlannerPath(
+            waypoints,
+            pathConstraints,
+            new IdealStartingState(0, Rotation2d.kZero),
+            new GoalEndState(0, Rotation2d.kZero));
 
     fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(path));
+    trajectoryUtils.resetRobotPoseAuto(path).schedule();
   }
 
   /** This function is called periodically during autonomous. */

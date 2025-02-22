@@ -54,21 +54,19 @@ public class TestTrajectoryUtils {
   @Test
   public void testTrajectoryRotationalFlip() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
-    var pathPoints = new ArrayList<PathPoint>();
-    pathPoints.add(
-        new PathPoint(
-            new Translation2d(0, 0), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
-    pathPoints.add(
-        new PathPoint(
-            new Translation2d(4, 0), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
-
+    var waypoints =
+        PathPlannerPath.waypointsFromPoses(
+            new Pose2d(0, 0, Rotation2d.kZero), new Pose2d(4, 0, Rotation2d.kZero));
     var path =
-        PathPlannerPath.fromPathPoints(
-            pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.kZero));
+        new PathPlannerPath(
+            waypoints,
+            pathConstraints,
+            new IdealStartingState(0, Rotation2d.kZero),
+            new GoalEndState(0, Rotation2d.kZero));
 
     var blueTrajectory = m_trajectoryUtils.getTrajectoryFromPathPlanner(() -> false, path);
 
-    var blueEndPose = new Pose2d(pathPoints.get(pathPoints.size() - 1).position, Rotation2d.kZero);
+    var blueEndPose = new Pose2d(waypoints.get(1).anchor(), Rotation2d.kZero);
 
     assertEquals(
         blueEndPose, blueTrajectory.sample(blueTrajectory.getTotalTimeSeconds()).poseMeters);
@@ -85,17 +83,15 @@ public class TestTrajectoryUtils {
   @Test
   public void testResetRobotPoseAuto() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
-    var pathPoints = new ArrayList<PathPoint>();
-    pathPoints.add(
-        new PathPoint(
-            new Translation2d(1, 1), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
-    pathPoints.add(
-        new PathPoint(
-            new Translation2d(5, 1), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
-
+    var waypoints =
+        PathPlannerPath.waypointsFromPoses(
+            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
     var bluePath =
-        PathPlannerPath.fromPathPoints(
-            pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.kZero));
+        new PathPlannerPath(
+            waypoints,
+            pathConstraints,
+            new IdealStartingState(0, Rotation2d.kZero),
+            new GoalEndState(0, Rotation2d.kZero));
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
     CommandScheduler.getInstance().schedule(m_trajectoryUtils.resetRobotPoseAuto(bluePath));
