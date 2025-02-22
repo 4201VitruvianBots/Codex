@@ -4,20 +4,15 @@
 
 package org.team4201.codex.utils;
 
-import static edu.wpi.first.units.Units.Meters;
-
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
+import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -32,18 +27,6 @@ import org.team4201.codex.subsystems.SwerveSubsystem;
  * href="https://github.com/mjansen4857/pathplanner">PathPlanner</a>.
  */
 public class TrajectoryUtils {
-  /** Field layout to get field dimensions TODO: Add ability to update this */
-  public static final AprilTagFieldLayout wpilibAprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-
-  /** Field X-axis */
-  public static final Distance LENGTH = Meters.of(wpilibAprilTagLayout.getFieldLength());
-
-  /** Field Y-axis */
-  public static final Distance WIDTH = Meters.of(wpilibAprilTagLayout.getFieldWidth());
-
-  private final Translation2d m_fieldCenter =
-      new Translation2d(LENGTH.div(2).in(Meters), WIDTH.div(2).in(Meters));
   private final SwerveSubsystem m_swerveDrive;
 
   /**
@@ -151,15 +134,12 @@ public class TrajectoryUtils {
     return new InstantCommand(
         () -> {
           var pathStartingPose = path.getStartingHolonomicPose();
-          AtomicReference<Pose2d> startingPose = new AtomicReference<>(new Pose2d());
+          AtomicReference<Pose2d> startingPose = new AtomicReference<>(Pose2d.kZero);
 
           pathStartingPose.ifPresent(
               (p) -> {
                 if (flipPathByAlliance()) {
-                  startingPose.set(
-                      new Pose2d(
-                          p.getTranslation().rotateAround(m_fieldCenter, Rotation2d.k180deg),
-                          p.getRotation().rotateBy(Rotation2d.k180deg)));
+                  startingPose.set(FlippingUtil.flipFieldPose(p));
                 } else {
                   startingPose.set(p);
                 }
@@ -207,18 +187,18 @@ public class TrajectoryUtils {
 
     for (var path : paths) {
       if (flipPath) {
-        path = path.flipPath();
+        pathPoses.addAll(
+            path.flipPath().getPathPoses().stream()
+                .map(
+                    p ->
+                        new Pose2d(
+                            p.getTranslation(), p.getRotation().rotateBy(Rotation2d.k180deg)))
+                .toList());
+      } else {
+        pathPoses.addAll(path.getPathPoses());
       }
-      var subPathPoses = path.getPathPoses();
-      subPathPoses.set(
-          0, new Pose2d(subPathPoses.get(0).getTranslation(), path.getInitialHeading()));
-      subPathPoses.set(
-          subPathPoses.size() - 1,
-          new Pose2d(
-              subPathPoses.get(subPathPoses.size() - 1).getTranslation(),
-              path.getGoalEndState().rotation()));
-      pathPoses.addAll(subPathPoses);
     }
+
     return TrajectoryGenerator.generateTrajectory(pathPoses, config);
   }
 

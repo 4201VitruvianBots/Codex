@@ -6,8 +6,12 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.system.plant.DCMotor;
 
 /** Class that implements {@link SwerveSubsystem} for simulation testing */
@@ -26,6 +30,17 @@ public class MockSwerveSubsystem implements SwerveSubsystem {
   RobotConfig robotConfig =
       new RobotConfig(
           5, 5, new ModuleConfig(0.2, 4, 1, DCMotor.getKrakenX60(1), 4, 1), modulePositions);
+
+  SwerveDriveOdometry m_swerveOdometry =
+      new SwerveDriveOdometry(
+          new SwerveDriveKinematics(modulePositions),
+          Rotation2d.kZero,
+          new SwerveModulePosition[] {
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+          });
 
   /** {@link MockSwerveSubsystem} constructor */
   public MockSwerveSubsystem() {}

@@ -45,50 +45,30 @@ public class TestTrajectoryUtils {
     var pathPoints = new ArrayList<PathPoint>();
     pathPoints.add(
         new PathPoint(
-            new Translation2d(0, 0),
-            new RotationTarget(0, Rotation2d.fromDegrees(45)),
-            pathConstraints));
+            new Translation2d(0, 0), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
     pathPoints.add(
         new PathPoint(
-            new Translation2d(4, 4),
-            new RotationTarget(0, Rotation2d.fromDegrees(45)),
-            pathConstraints));
+            new Translation2d(4, 0), new RotationTarget(0, Rotation2d.kZero), pathConstraints));
 
     var path =
         PathPlannerPath.fromPathPoints(
-            pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.fromDegrees(45)));
+            pathPoints, pathConstraints, new GoalEndState(0, Rotation2d.kZero));
 
     var blueTrajectory =
         m_trajectoryUtils.getTrajectoryFromPathPlanner(trajectoryConfig, false, path);
-    var blueEndState =
-        new Trajectory.State(
-            blueTrajectory.getTotalTimeSeconds(),
-            0,
-            0,
-            new Pose2d(4, 4, Rotation2d.fromDegrees(45)),
-            0);
-    // Acceleration of WPILib Trajectory ends with - 1/s^2?
-    // assertEquals(blueEndState, blueTrajectory.sample(blueTrajectory.getTotalTimeSeconds()));
+
+    var blueEndPose = new Pose2d(pathPoints.get(pathPoints.size() - 1).position, Rotation2d.kZero);
+
     assertEquals(
-        blueEndState.poseMeters,
-        blueTrajectory.sample(blueTrajectory.getTotalTimeSeconds()).poseMeters);
+        blueEndPose, blueTrajectory.sample(blueTrajectory.getTotalTimeSeconds()).poseMeters);
 
     var redTrajectory =
         m_trajectoryUtils.getTrajectoryFromPathPlanner(trajectoryConfig, true, path);
-    var redEndState =
-        new Trajectory.State(
-            redTrajectory.getTotalTimeSeconds(),
-            0,
-            0,
-            new Pose2d(
-                FlippingUtil.fieldSizeX - 4,
-                FlippingUtil.fieldSizeY - 4,
-                Rotation2d.fromDegrees(45).minus(Rotation2d.k180deg)),
-            0);
-    // Acceleration of WPILib Trajectory ends with - 1/s^2?
-    // assertEquals(redEndState, redTrajectory.sample(redTrajectory.getTotalTimeSeconds()));
-    assertEquals(
-        redEndState.poseMeters,
-        redTrajectory.sample(redTrajectory.getTotalTimeSeconds()).poseMeters);
+
+    var redEndPose = FlippingUtil.flipFieldPose(blueEndPose);
+
+    assertNotEquals(blueTrajectory, redTrajectory);
+
+    assertEquals(redEndPose, redTrajectory.sample(redTrajectory.getTotalTimeSeconds()).poseMeters);
   }
 }
