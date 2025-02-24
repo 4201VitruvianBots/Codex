@@ -102,9 +102,9 @@ public class TestTrajectoryUtils {
 
     assertEquals(path.getStartingDifferentialPose(), m_swerveDrive.getPose());
 
+    CommandScheduler.getInstance().cancelAll();
     DriverStationSim.setAllianceStationId(AllianceStationID.Red1);
     DriverStationSim.notifyNewData();
-    Timer.delay(0.01);
     CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(path));
     CommandScheduler.getInstance().run();
 

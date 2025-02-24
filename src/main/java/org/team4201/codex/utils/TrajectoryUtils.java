@@ -91,8 +91,7 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command generatePPHolonomicCommand(PathPlannerPath path, BooleanSupplier flipPath) {
-    return resetRobotPoseAuto(path, flipPath)
-        .andThen(
+    return new SequentialCommandGroup(resetRobotPoseAuto(path, flipPath),
             new FollowPathCommand(
                 path,
                 () -> m_swerveDrive.getState().Pose,
@@ -186,7 +185,8 @@ public class TrajectoryUtils {
                 () -> m_swerveDrive.resetPose(FlippingUtil.flipFieldPose(pose)), m_swerveDrive),
             new RunCommand(() -> m_swerveDrive.resetPose(pose), m_swerveDrive),
             flipPose)
-        .ignoringDisable(true);
+        .ignoringDisable(true)
+        .until(() -> true);
   }
 
   /**
