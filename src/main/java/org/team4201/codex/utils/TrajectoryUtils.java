@@ -10,13 +10,12 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import org.team4201.codex.subsystems.SwerveSubsystem;
@@ -26,6 +25,8 @@ import org.team4201.codex.subsystems.SwerveSubsystem;
  * href="https://github.com/mjansen4857/pathplanner">PathPlanner</a>.
  */
 public class TrajectoryUtils {
+  private final Translation2d fieldCenter =
+      new Translation2d(FlippingUtil.fieldSizeX / 2, FlippingUtil.fieldSizeY / 2);
   private final SwerveSubsystem m_swerveDrive;
 
   /**
@@ -79,7 +80,6 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command generatePPHolonomicCommand(PathPlannerPath path) {
-
     return generatePPHolonomicCommand(path, this::flipPathByAlliance);
   }
 
@@ -181,15 +181,11 @@ public class TrajectoryUtils {
    * @return Command
    */
   private Command resetRobotPoseAuto(Pose2d pose, BooleanSupplier flipPose) {
-    return new InstantCommand(
-            () -> {
-              if (flipPose.getAsBoolean()) {
-                m_swerveDrive.resetPose(FlippingUtil.flipFieldPose(pose));
-              } else {
-                m_swerveDrive.resetPose(pose);
-              }
-            },
-            m_swerveDrive)
+    return new ConditionalCommand(
+            new RunCommand(
+                () -> m_swerveDrive.resetPose(FlippingUtil.flipFieldPose(pose)), m_swerveDrive),
+            new RunCommand(() -> m_swerveDrive.resetPose(pose), m_swerveDrive),
+            flipPose)
         .ignoringDisable(true);
   }
 

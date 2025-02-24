@@ -81,7 +81,7 @@ public class TestTrajectoryUtils {
   }
 
   @Test
-  public void testResetRobotPoseAuto() {
+  public void testResetRobotPoseAutoBlue() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
     var waypoints =
         PathPlannerPath.waypointsFromPoses(
@@ -94,14 +94,29 @@ public class TestTrajectoryUtils {
             new GoalEndState(0, Rotation2d.kZero));
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+    DriverStationSim.notifyNewData();
     CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(bluePath));
     CommandScheduler.getInstance().run();
 
     assertEquals(bluePath.getStartingDifferentialPose(), m_swerveDrive.getPose());
+  }
 
+  @Test
+  public void testResetRobotPoseAutoRed() {
+    var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
+    var waypoints =
+        PathPlannerPath.waypointsFromPoses(
+            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
+    var bluePath =
+        new PathPlannerPath(
+            waypoints,
+            pathConstraints,
+            new IdealStartingState(0, Rotation2d.kZero),
+            new GoalEndState(0, Rotation2d.kZero));
     var redPath = bluePath.flipPath();
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Red1);
+    DriverStationSim.notifyNewData();
     CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(redPath));
     CommandScheduler.getInstance().run();
 
