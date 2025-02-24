@@ -16,6 +16,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
@@ -49,8 +50,7 @@ public class TrajectoryUtils {
           PathPlannerPath.fromPathFile(pathName), this::flipPathByAlliance);
     } catch (Exception e) {
       DriverStation.reportError(
-          "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
-          e.getStackTrace());
+          String.format("Could not load PathPlanner Path '%s'", pathName), e.getStackTrace());
       return new WaitCommand(0);
     }
   }
@@ -68,8 +68,7 @@ public class TrajectoryUtils {
       return generatePPHolonomicCommand(PathPlannerPath.fromPathFile(pathName), flipPath);
     } catch (Exception e) {
       DriverStation.reportError(
-          "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
-          e.getStackTrace());
+          String.format("Could not load PathPlanner Path '%s'", pathName), e.getStackTrace());
       return new WaitCommand(0);
     }
   }
@@ -93,17 +92,19 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command generatePPHolonomicCommand(PathPlannerPath path, BooleanSupplier flipPath) {
-    return new FollowPathCommand(
-        path,
-        () -> m_swerveDrive.getState().Pose,
-        () -> m_swerveDrive.getState().Speeds,
-        m_swerveDrive::setChassisSpeedsAuto,
-        new PPHolonomicDriveController(
-            m_swerveDrive.getAutoTranslationPIDConstants(),
-            m_swerveDrive.getAutoRotationPIDConstants()),
-        m_swerveDrive.getAutoRobotConfig(),
-        flipPath,
-        m_swerveDrive);
+    return new SequentialCommandGroup(
+        resetRobotPoseAuto(path),
+        new FollowPathCommand(
+            path,
+            () -> m_swerveDrive.getState().Pose,
+            () -> m_swerveDrive.getState().Speeds,
+            m_swerveDrive::setChassisSpeedsAuto,
+            new PPHolonomicDriveController(
+                m_swerveDrive.getAutoTranslationPIDConstants(),
+                m_swerveDrive.getAutoRotationPIDConstants()),
+            m_swerveDrive.getAutoRobotConfig(),
+            flipPath,
+            m_swerveDrive));
   }
 
   /**
@@ -113,12 +114,23 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command resetRobotPoseAuto(String pathName) {
+    return resetRobotPoseAuto(pathName, this::flipPathByAlliance);
+  }
+
+  /**
+   * Reset the robot's initial pose for auto.
+   *
+   * @param pathName The name of the {@link PathPlannerPath} containing the initial {@link Pose2d}.
+   * @param flipPose {@link BooleanSupplier} to determine if the starting pose should be flipped.
+   *     Default to using flipPathByAlliance.
+   * @return Command
+   */
+  public Command resetRobotPoseAuto(String pathName, BooleanSupplier flipPose) {
     try {
-      return resetRobotPoseAuto(PathPlannerPath.fromPathFile(pathName));
+      return resetRobotPoseAuto(PathPlannerPath.fromPathFile(pathName), flipPose);
     } catch (Exception e) {
       DriverStation.reportError(
-          "Could not load PathPlanner Path '" + pathName + "':" + e.getMessage(),
-          e.getStackTrace());
+          String.format("Could not load PathPlanner Path '%s'", pathName), e.getStackTrace());
       return new WaitCommand(0);
     }
   }
@@ -130,22 +142,54 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command resetRobotPoseAuto(PathPlannerPath path) {
+    return resetRobotPoseAuto(path, this::flipPathByAlliance);
+  }
+
+  /**
+   * Reset the robot's initial pose for auto.
+   *
+   * @param path The {@link PathPlannerPath} containing the initial {@link Pose2d}.
+   * @param flipPose {@link BooleanSupplier} to determine if the starting pose should be flipped.
+   *     Default to using flipPathByAlliance.
+   * @return Command
+   */
+  public Command resetRobotPoseAuto(PathPlannerPath path, BooleanSupplier flipPose) {
+    var ppPose = path.getStartingHolonomicPose();
+    if (ppPose.isPresent()) {
+      return resetRobotPoseAuto(ppPose.get(), flipPose);
+    } else {
+      throw new RuntimeException(
+          "[TrajectoryUtils::resetRobotPoseAuto] PathPlannerPath does not have a starting holonomic pose!");
+    }
+  }
+
+  /**
+   * Reset the robot's initial pose for auto.
+   *
+   * @param pose The {@link Pose2d} to use.
+   * @return Command
+   */
+  public Command resetRobotPoseAuto(Pose2d pose) {
+    return resetRobotPoseAuto(pose, this::flipPathByAlliance);
+  }
+
+  /**
+   * Reset the robot's initial pose for auto.
+   *
+   * @param pose The {@link Pose2d} to use.
+   * @param flipPose {@link BooleanSupplier} to determine if the starting pose should be flipped.
+   *     Default to using flipPathByAlliance.
+   * @return Command
+   */
+  public Command resetRobotPoseAuto(Pose2d pose, BooleanSupplier flipPose) {
     return new InstantCommand(
-            () ->
-                path.getStartingHolonomicPose()
-                    .ifPresentOrElse(
-                        p -> {
-                          if (flipPathByAlliance()) {
-                            p = FlippingUtil.flipFieldPose(p);
-                          }
-                          m_swerveDrive.resetPose(p);
-                        },
-                        () ->
-                            DriverStation.reportWarning(
-                                String.format(
-                                    "[TrajectoryUtils] Given path %s does not have a starting Holonomic Pose!",
-                                    path.name),
-                                false)),
+            () -> {
+              if (flipPose.getAsBoolean()) {
+                m_swerveDrive.resetPose(FlippingUtil.flipFieldPose(pose));
+              } else {
+                m_swerveDrive.resetPose(pose);
+              }
+            },
             m_swerveDrive)
         .ignoringDisable(true);
   }
