@@ -16,6 +16,7 @@ import org.team4201.codex.simulation.visualization.Flywheel2d;
 import org.team4201.codex.simulation.visualization.configs.Arm2dConfig;
 import org.team4201.codex.simulation.visualization.configs.Elevator2dConfig;
 import org.team4201.codex.simulation.visualization.configs.Flywheel2dConfig;
+import org.team4201.codex.subsystems.MockSimpleMotorSubsystem;
 import org.team4201.codex.subsystems.MockSwerveSubsystem;
 import org.team4201.codex.utils.TrajectoryUtils;
 
@@ -26,6 +27,7 @@ import org.team4201.codex.utils.TrajectoryUtils;
 public class Robot extends TimedRobot {
   MockSwerveSubsystem swerveDrive = new MockSwerveSubsystem();
   TrajectoryUtils trajectoryUtils = new TrajectoryUtils(swerveDrive);
+  MockSimpleMotorSubsystem subsystem = new MockSimpleMotorSubsystem();
   FieldSim fieldSim = new FieldSim();
 
   Mechanism2d testBot = new Mechanism2d(30, 30);
@@ -48,6 +50,7 @@ public class Robot extends TimedRobot {
       DriverStation.reportError("Codex should not be run as robot code!", false);
       throw new RuntimeException("Codex is run as robot code!");
     }
+    enableLiveWindowInTest(true);
 
     elevator2d.generateSubDisplay();
     arm2d.generateSubDisplay();
