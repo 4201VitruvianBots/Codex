@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ public class TestTrajectoryUtils {
     var waypoints =
         PathPlannerPath.waypointsFromPoses(
             new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
-    var bluePath =
+    var path =
         new PathPlannerPath(
             waypoints,
             pathConstraints,
@@ -95,31 +97,17 @@ public class TestTrajectoryUtils {
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
     DriverStationSim.notifyNewData();
-    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(bluePath));
+    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(path));
     CommandScheduler.getInstance().run();
 
-    assertEquals(bluePath.getStartingDifferentialPose(), m_swerveDrive.getPose());
-  }
-
-  @Test
-  public void testResetRobotPoseAutoRed() {
-    var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
-    var waypoints =
-        PathPlannerPath.waypointsFromPoses(
-            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
-    var bluePath =
-        new PathPlannerPath(
-            waypoints,
-            pathConstraints,
-            new IdealStartingState(0, Rotation2d.kZero),
-            new GoalEndState(0, Rotation2d.kZero));
-    var redPath = bluePath.flipPath();
+    assertEquals(path.getStartingDifferentialPose(), m_swerveDrive.getPose());
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Red1);
     DriverStationSim.notifyNewData();
-    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(redPath));
+    Timer.delay(0.01);
+    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(path));
     CommandScheduler.getInstance().run();
 
-    assertEquals(redPath.getStartingDifferentialPose(), m_swerveDrive.getPose());
+    assertEquals(path.flipPath().getStartingDifferentialPose(), m_swerveDrive.getPose());
   }
 }
