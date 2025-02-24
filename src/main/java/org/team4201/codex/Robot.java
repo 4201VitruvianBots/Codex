@@ -88,18 +88,22 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
+    //    var waypoints =
+    //        PathPlannerPath.waypointsFromPoses(
+    //            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
     var waypoints =
         PathPlannerPath.waypointsFromPoses(
-            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
+            new Pose2d(17, 1, Rotation2d.k180deg), new Pose2d(13, 1, Rotation2d.k180deg));
     var path =
         new PathPlannerPath(
             waypoints,
             pathConstraints,
-            new IdealStartingState(0, Rotation2d.kZero),
-            new GoalEndState(0, Rotation2d.kZero));
+            new IdealStartingState(0, Rotation2d.k180deg),
+            new GoalEndState(0, Rotation2d.k180deg));
 
-    fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(path));
-    trajectoryUtils.resetRobotPoseAuto(path).schedule();
+    fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(() -> false, path));
+    var cmd = trajectoryUtils.generatePPHolonomicCommand(path);
+    CommandScheduler.getInstance().schedule(cmd);
   }
 
   /** This function is called periodically during autonomous. */

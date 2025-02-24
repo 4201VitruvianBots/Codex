@@ -16,7 +16,6 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
@@ -92,19 +91,19 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command generatePPHolonomicCommand(PathPlannerPath path, BooleanSupplier flipPath) {
-    return new SequentialCommandGroup(
-        resetRobotPoseAuto(path),
-        new FollowPathCommand(
-            path,
-            () -> m_swerveDrive.getState().Pose,
-            () -> m_swerveDrive.getState().Speeds,
-            m_swerveDrive::setChassisSpeedsAuto,
-            new PPHolonomicDriveController(
-                m_swerveDrive.getAutoTranslationPIDConstants(),
-                m_swerveDrive.getAutoRotationPIDConstants()),
-            m_swerveDrive.getAutoRobotConfig(),
-            flipPath,
-            m_swerveDrive));
+    return resetRobotPoseAuto(path, flipPath)
+        .andThen(
+            new FollowPathCommand(
+                path,
+                () -> m_swerveDrive.getState().Pose,
+                () -> m_swerveDrive.getState().Speeds,
+                m_swerveDrive::setChassisSpeedsAuto,
+                new PPHolonomicDriveController(
+                    m_swerveDrive.getAutoTranslationPIDConstants(),
+                    m_swerveDrive.getAutoRotationPIDConstants()),
+                m_swerveDrive.getAutoRobotConfig(),
+                flipPath,
+                m_swerveDrive));
   }
 
   /**
@@ -113,7 +112,7 @@ public class TrajectoryUtils {
    * @param pathName The name of the {@link PathPlannerPath} containing the initial {@link Pose2d}.
    * @return Command
    */
-  public Command resetRobotPoseAuto(String pathName) {
+  private Command resetRobotPoseAuto(String pathName) {
     return resetRobotPoseAuto(pathName, this::flipPathByAlliance);
   }
 
@@ -125,7 +124,7 @@ public class TrajectoryUtils {
    *     Default to using flipPathByAlliance.
    * @return Command
    */
-  public Command resetRobotPoseAuto(String pathName, BooleanSupplier flipPose) {
+  private Command resetRobotPoseAuto(String pathName, BooleanSupplier flipPose) {
     try {
       return resetRobotPoseAuto(PathPlannerPath.fromPathFile(pathName), flipPose);
     } catch (Exception e) {
@@ -141,7 +140,7 @@ public class TrajectoryUtils {
    * @param path The {@link PathPlannerPath} containing the initial {@link Pose2d}.
    * @return Command
    */
-  public Command resetRobotPoseAuto(PathPlannerPath path) {
+  private Command resetRobotPoseAuto(PathPlannerPath path) {
     return resetRobotPoseAuto(path, this::flipPathByAlliance);
   }
 
@@ -153,7 +152,7 @@ public class TrajectoryUtils {
    *     Default to using flipPathByAlliance.
    * @return Command
    */
-  public Command resetRobotPoseAuto(PathPlannerPath path, BooleanSupplier flipPose) {
+  private Command resetRobotPoseAuto(PathPlannerPath path, BooleanSupplier flipPose) {
     var ppPose = path.getStartingHolonomicPose();
     if (ppPose.isPresent()) {
       return resetRobotPoseAuto(ppPose.get(), flipPose);
@@ -169,7 +168,7 @@ public class TrajectoryUtils {
    * @param pose The {@link Pose2d} to use.
    * @return Command
    */
-  public Command resetRobotPoseAuto(Pose2d pose) {
+  private Command resetRobotPoseAuto(Pose2d pose) {
     return resetRobotPoseAuto(pose, this::flipPathByAlliance);
   }
 
@@ -181,7 +180,7 @@ public class TrajectoryUtils {
    *     Default to using flipPathByAlliance.
    * @return Command
    */
-  public Command resetRobotPoseAuto(Pose2d pose, BooleanSupplier flipPose) {
+  private Command resetRobotPoseAuto(Pose2d pose, BooleanSupplier flipPose) {
     return new InstantCommand(
             () -> {
               if (flipPose.getAsBoolean()) {
@@ -244,8 +243,7 @@ public class TrajectoryUtils {
   }
 
   private boolean flipPathByAlliance() {
-    return DriverStation.getAlliance()
-        .filter(alliance -> alliance == DriverStation.Alliance.Red)
-        .isPresent();
+    return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
+        == DriverStation.Alliance.Red;
   }
 }

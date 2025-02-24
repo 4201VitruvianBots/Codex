@@ -94,7 +94,7 @@ public class TestTrajectoryUtils {
             new GoalEndState(0, Rotation2d.kZero));
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-    CommandScheduler.getInstance().schedule(m_trajectoryUtils.resetRobotPoseAuto(bluePath));
+    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(bluePath));
     CommandScheduler.getInstance().run();
 
     assertEquals(bluePath.getStartingDifferentialPose(), m_swerveDrive.getPose());
@@ -102,7 +102,7 @@ public class TestTrajectoryUtils {
     var redPath = bluePath.flipPath();
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Red1);
-    CommandScheduler.getInstance().schedule(m_trajectoryUtils.resetRobotPoseAuto(redPath));
+    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(redPath));
     CommandScheduler.getInstance().run();
 
     assertEquals(redPath.getStartingDifferentialPose(), m_swerveDrive.getPose());

@@ -5,7 +5,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '2025.0.25'
+def pubVersion = '2025.0.26'
 
 def releasesRepoUrl = "$buildDir/../releases/repos"
 
