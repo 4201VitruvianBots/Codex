@@ -17,6 +17,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import org.team4201.codex.subsystems.SwerveSubsystem;
 
@@ -93,16 +94,16 @@ public class TrajectoryUtils {
   public Command generatePPHolonomicCommand(PathPlannerPath path, BooleanSupplier flipPath) {
     return new SequentialCommandGroup(resetRobotPoseAuto(path, flipPath),
             new FollowPathCommand(
-                path,
-                () -> m_swerveDrive.getState().Pose,
-                () -> m_swerveDrive.getState().Speeds,
-                m_swerveDrive::setChassisSpeedsAuto,
-                new PPHolonomicDriveController(
-                    m_swerveDrive.getAutoTranslationPIDConstants(),
-                    m_swerveDrive.getAutoRotationPIDConstants()),
-                m_swerveDrive.getAutoRobotConfig(),
-                flipPath,
-                m_swerveDrive));
+                    path,
+                    () -> m_swerveDrive.getState().Pose,
+                    () -> m_swerveDrive.getState().Speeds,
+                    m_swerveDrive::setChassisSpeedsAuto,
+                    new PPHolonomicDriveController(
+                        m_swerveDrive.getAutoTranslationPIDConstants(),
+                        m_swerveDrive.getAutoRotationPIDConstants()),
+                    m_swerveDrive.getAutoRobotConfig(),
+                    flipPath,
+                    m_swerveDrive)).withName(Objects.equals(path.name, "") ? "FollowPathCommand": path.name);
   }
 
   /**
@@ -186,7 +187,8 @@ public class TrajectoryUtils {
             new RunCommand(() -> m_swerveDrive.resetPose(pose), m_swerveDrive),
             flipPose)
         .ignoringDisable(true)
-        .until(() -> true);
+        .until(() -> true)
+        .withName("ResetRobotPoseAuto");
   }
 
   /**
