@@ -2,6 +2,7 @@ package org.team4201.codex.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.path.*;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.hal.AllianceStationID;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.team4201.codex.subsystems.MockSwerveSubsystem;
 
@@ -81,7 +83,7 @@ public class TestTrajectoryUtils {
   }
 
   @Test
-  public void testResetRobotPoseAutoBlue() {
+  public void testResetRobotPoseAuto() {
     var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
     var waypoints =
         PathPlannerPath.waypointsFromPoses(
@@ -107,5 +109,36 @@ public class TestTrajectoryUtils {
     CommandScheduler.getInstance().run();
 
     assertEquals(path.flipPath().getStartingDifferentialPose(), m_swerveDrive.getState().Pose);
+  }
+
+  @Disabled("To fix")
+  public void testGeneratePPHolonomicCommand() {
+    var swerveRequest = new SwerveRequest.SwerveDriveBrake();
+    var testDefaultCommand =
+        m_swerveDrive.applyRequest(() -> swerveRequest).withName("defaultCommand");
+    m_swerveDrive.setDefaultCommand(testDefaultCommand);
+
+    var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
+    var waypoints =
+        PathPlannerPath.waypointsFromPoses(
+            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
+    var path =
+        new PathPlannerPath(
+            waypoints,
+            pathConstraints,
+            new IdealStartingState(0, Rotation2d.kZero),
+            new GoalEndState(0, Rotation2d.kZero));
+    CommandScheduler.getInstance().run();
+    var currentCommand2 = m_swerveDrive.getCurrentCommand();
+
+    CommandScheduler.getInstance().schedule(m_trajectoryUtils.generatePPHolonomicCommand(path));
+    for (int i = 0; i < 100; i++) {
+      CommandScheduler.getInstance().run();
+      var currentCommand = m_swerveDrive.getCurrentCommand();
+      if (currentCommand == testDefaultCommand) {
+        break;
+      }
+    }
+    assertEquals(testDefaultCommand, m_swerveDrive.getCurrentCommand());
   }
 }

@@ -10,7 +10,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -26,8 +25,6 @@ import org.team4201.codex.subsystems.SwerveSubsystem;
  * href="https://github.com/mjansen4857/pathplanner">PathPlanner</a>.
  */
 public class TrajectoryUtils {
-  private final Translation2d fieldCenter =
-      new Translation2d(FlippingUtil.fieldSizeX / 2, FlippingUtil.fieldSizeY / 2);
   private final SwerveSubsystem m_swerveDrive;
 
   /**
@@ -92,7 +89,8 @@ public class TrajectoryUtils {
    * @return Command
    */
   public Command generatePPHolonomicCommand(PathPlannerPath path, BooleanSupplier flipPath) {
-    return new SequentialCommandGroup(resetRobotPoseAuto(path, flipPath),
+    return resetRobotPoseAuto(path, flipPath)
+        .andThen(
             new FollowPathCommand(
                     path,
                     () -> m_swerveDrive.getState().Pose,
@@ -103,7 +101,8 @@ public class TrajectoryUtils {
                         m_swerveDrive.getAutoRotationPIDConstants()),
                     m_swerveDrive.getAutoRobotConfig(),
                     flipPath,
-                    m_swerveDrive)).withName(Objects.equals(path.name, "") ? "FollowPathCommand": path.name);
+                    m_swerveDrive)
+                .withName(Objects.equals(path.name, "") ? "FollowPathCommand" : path.name));
   }
 
   /**
@@ -140,7 +139,7 @@ public class TrajectoryUtils {
    * @param path The {@link PathPlannerPath} containing the initial {@link Pose2d}.
    * @return Command
    */
-  private Command resetRobotPoseAuto(PathPlannerPath path) {
+  public Command resetRobotPoseAuto(PathPlannerPath path) {
     return resetRobotPoseAuto(path, this::flipPathByAlliance);
   }
 
@@ -182,12 +181,11 @@ public class TrajectoryUtils {
    */
   private Command resetRobotPoseAuto(Pose2d pose, BooleanSupplier flipPose) {
     return new ConditionalCommand(
-            new RunCommand(
+            new InstantCommand(
                 () -> m_swerveDrive.resetPose(FlippingUtil.flipFieldPose(pose)), m_swerveDrive),
-            new RunCommand(() -> m_swerveDrive.resetPose(pose), m_swerveDrive),
+            new InstantCommand(() -> m_swerveDrive.resetPose(pose), m_swerveDrive),
             flipPose)
         .ignoringDisable(true)
-        .until(() -> true)
         .withName("ResetRobotPoseAuto");
   }
 

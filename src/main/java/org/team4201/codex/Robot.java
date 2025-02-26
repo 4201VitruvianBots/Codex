@@ -65,20 +65,22 @@ public class Robot extends TimedRobot {
     // Set Subsystem DefaultCommands
     swerveDrive.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        swerveDrive.applyRequest(
-            () ->
-                drive
-                    .withVelocityX(
-                        -testController.getRawAxis(1)
-                            * maxSpeed.magnitude()) // Drive forward with negative Y (forward)
-                    .withVelocityY(
-                        -testController.getRawAxis(0)
-                            * maxSpeed.magnitude()) // Drive left with negative X (left)
-                    .withRotationalRate(
-                        testController.getRawAxis(0)
-                            * maxAngularRate
-                                .magnitude()) // Drive counterclockwise with negative X (left)
-            ));
+        swerveDrive
+            .applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            -testController.getRawAxis(1)
+                                * maxSpeed.magnitude()) // Drive forward with negative Y (forward)
+                        .withVelocityY(
+                            -testController.getRawAxis(0)
+                                * maxSpeed.magnitude()) // Drive left with negative X (left)
+                        .withRotationalRate(
+                            testController.getRawAxis(0)
+                                * maxAngularRate
+                                    .magnitude()) // Drive counterclockwise with negative X (left)
+                )
+            .withName("drive"));
 
     enableLiveWindowInTest(true);
 
@@ -118,7 +120,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your RobotContainer class. */
   @Override
   public void autonomousInit() {
-    var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
+    var pathConstraints = new PathConstraints(4, 4, 2, 2, 12);
     var waypoints =
         PathPlannerPath.waypointsFromPoses(
             new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
@@ -128,6 +130,7 @@ public class Robot extends TimedRobot {
             pathConstraints,
             new IdealStartingState(0, Rotation2d.kZero),
             new GoalEndState(0, Rotation2d.kZero));
+    path.name = "test";
 
     fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(path));
     trajectoryUtils.generatePPHolonomicCommand(path).schedule();
