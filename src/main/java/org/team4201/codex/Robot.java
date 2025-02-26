@@ -1,7 +1,10 @@
 package org.team4201.codex;
 
 import static edu.wpi.first.units.Units.*;
+import static org.team4201.codex.subsystems.MockSwerveSubsystem.maxAngularRate;
+import static org.team4201.codex.subsystems.MockSwerveSubsystem.maxSpeed;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.path.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,6 +12,7 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import org.team4201.codex.simulation.FieldSim;
 import org.team4201.codex.simulation.visualization.Arm2d;
 import org.team4201.codex.simulation.visualization.Elevator2d;
@@ -30,6 +34,13 @@ public class Robot extends TimedRobot {
   MockSimpleMotorSubsystem subsystem = new MockSimpleMotorSubsystem();
   FieldSim fieldSim = new FieldSim();
 
+  private final SwerveRequest.FieldCentric drive =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(maxSpeed.magnitude() * 0.1)
+          .withRotationalDeadband(maxAngularRate.magnitude() * 0.1); // Add a 10% deadband
+
+  private CommandPS4Controller testController = new CommandPS4Controller(0);
+
   Mechanism2d testBot = new Mechanism2d(30, 30);
   MechanismRoot2d superStructureRoot = testBot.getRoot("superStructureRoot", 15, 1);
   Elevator2d elevator2d =
@@ -50,12 +61,34 @@ public class Robot extends TimedRobot {
       DriverStation.reportError("Codex should not be run as robot code!", false);
       throw new RuntimeException("Codex is run as robot code!");
     }
+
+    // Set Subsystem DefaultCommands
+    swerveDrive.setDefaultCommand(
+        // Drivetrain will execute this command periodically
+        swerveDrive
+            .applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(
+                            -testController.getRawAxis(1)
+                                * maxSpeed.magnitude()) // Drive forward with negative Y (forward)
+                        .withVelocityY(
+                            -testController.getRawAxis(0)
+                                * maxSpeed.magnitude()) // Drive left with negative X (left)
+                        .withRotationalRate(
+                            testController.getRawAxis(0)
+                                * maxAngularRate
+                                    .magnitude()) // Drive counterclockwise with negative X (left)
+                )
+            .withName("drive"));
+
     enableLiveWindowInTest(true);
 
     elevator2d.generateSubDisplay();
     arm2d.generateSubDisplay();
     flywheel2d.generateSubDisplay();
 
+    SmartDashboard.putData(CommandScheduler.getInstance());
     SmartDashboard.putData("testBot", testBot);
   }
 
@@ -70,10 +103,10 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
+    // and running subsystem periodic() methods. This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    fieldSim.addPoses("robotPose", swerveDrive.getPose());
+    fieldSim.addPoses("robotPose", swerveDrive.getState().Pose);
     fieldSim.periodic();
   }
 
@@ -87,23 +120,20 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your RobotContainer class. */
   @Override
   public void autonomousInit() {
-    var pathConstraints = new PathConstraints(1, 1, 1, 1, 12);
-    //    var waypoints =
-    //        PathPlannerPath.waypointsFromPoses(
-    //            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
+    var pathConstraints = new PathConstraints(4, 4, 2, 2, 12);
     var waypoints =
         PathPlannerPath.waypointsFromPoses(
-            new Pose2d(17, 1, Rotation2d.k180deg), new Pose2d(13, 1, Rotation2d.k180deg));
+            new Pose2d(1, 1, Rotation2d.kZero), new Pose2d(5, 1, Rotation2d.kZero));
     var path =
         new PathPlannerPath(
             waypoints,
             pathConstraints,
-            new IdealStartingState(0, Rotation2d.k180deg),
-            new GoalEndState(0, Rotation2d.k180deg));
+            new IdealStartingState(0, Rotation2d.kZero),
+            new GoalEndState(0, Rotation2d.kZero));
+    path.name = "test";
 
-    fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(() -> false, path));
-    var cmd = trajectoryUtils.generatePPHolonomicCommand(path);
-    CommandScheduler.getInstance().schedule(cmd);
+    fieldSim.addTrajectory(trajectoryUtils.getTrajectoryFromPathPlanner(path));
+    trajectoryUtils.generatePPHolonomicCommand(path).schedule();
   }
 
   /** This function is called periodically during autonomous. */
