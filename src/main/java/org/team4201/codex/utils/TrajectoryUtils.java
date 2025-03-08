@@ -26,6 +26,7 @@ import org.team4201.codex.subsystems.SwerveSubsystem;
  */
 public class TrajectoryUtils {
   private final SwerveSubsystem m_swerveDrive;
+  private final TrajectoryUtilsConfig m_config;
 
   /**
    * Construct a {@link TrajectoryUtils} object to manage trajectory following.
@@ -33,7 +34,18 @@ public class TrajectoryUtils {
    * @param swerveDrive The {@link SwerveSubsystem}
    */
   public TrajectoryUtils(SwerveSubsystem swerveDrive) {
+    this(swerveDrive, new TrajectoryUtilsConfig());
+  }
+
+  /**
+   * Construct a {@link TrajectoryUtils} object to manage trajectory following.
+   *
+   * @param swerveDrive The {@link SwerveSubsystem}
+   * @param config The {@link TrajectoryUtilsConfig} to use
+   */
+  public TrajectoryUtils(SwerveSubsystem swerveDrive, TrajectoryUtilsConfig config) {
     m_swerveDrive = swerveDrive;
+    m_config = config;
   }
 
   /**
@@ -153,11 +165,15 @@ public class TrajectoryUtils {
    */
   private Command resetRobotPoseAuto(PathPlannerPath path, BooleanSupplier flipPose) {
     var ppPose = path.getStartingHolonomicPose();
-    if (ppPose.isPresent()) {
-      return resetRobotPoseAuto(ppPose.get(), flipPose);
+    if (m_config.resetPoseOnAuto) {
+      if (ppPose.isPresent()) {
+        return resetRobotPoseAuto(ppPose.get(), flipPose);
+      } else {
+        throw new RuntimeException(
+            "[TrajectoryUtils::resetRobotPoseAuto] PathPlannerPath does not have a starting holonomic pose!");
+      }
     } else {
-      throw new RuntimeException(
-          "[TrajectoryUtils::resetRobotPoseAuto] PathPlannerPath does not have a starting holonomic pose!");
+      return new WaitCommand(0);
     }
   }
 
@@ -241,5 +257,29 @@ public class TrajectoryUtils {
   private boolean flipPathByAlliance() {
     return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
         == DriverStation.Alliance.Red;
+  }
+
+  /** Class for setting {@link TrajectoryUtils} settings */
+  public static class TrajectoryUtilsConfig {
+    /**
+     * Setting to reset the robot's pose at the beginning of auto to match the PathPlanner
+     * trajectory
+     */
+    public boolean resetPoseOnAuto = true;
+
+    /** Create a new instance of {@link TrajectoryUtilsConfig} */
+    public TrajectoryUtilsConfig() {}
+
+    /**
+     * Setting to reset the robot's pose at the beginning of auto to match the PathPlanner
+     * trajectory
+     *
+     * @param enable To enable this.
+     * @return Itself
+     */
+    public TrajectoryUtilsConfig withResetPoseOnAuto(boolean enable) {
+      this.resetPoseOnAuto = enable;
+      return this;
+    }
   }
 }
