@@ -38,7 +38,17 @@ public class FieldSim extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Add a pose once to FieldSim.
+   * Add poses once to FieldSim.
+   *
+   * @param key The name of the object (Must be unique)
+   * @param poses The poses corresponding to the object's position
+   */
+  public void initializePoses(String key, List<Pose2d> poses) {
+    m_field2D.getObject(key).setPoses(poses);
+  }
+
+  /**
+   * Add poses once to FieldSim.
    *
    * @param key The name of the object (Must be unique)
    * @param poses The poses corresponding to the object's position
