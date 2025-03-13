@@ -2,6 +2,7 @@ package org.team4201.codex.simulation;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,6 +32,11 @@ public class FieldSim extends SubsystemBase implements AutoCloseable {
   private final Field2d m_field2D = new Field2d();
 
   private final Map<String, Pose2d[]> m_objectPoses = new HashMap<>();
+
+  private final NetworkTableInstance nt = NetworkTableInstance.getDefault();
+  private final NetworkTable field2dTable = nt.getTable("SmartDashboard").getSubTable("Field2D");
+  private final ProtobufPublisher<Trajectory> trajectoryProtoPublisher =
+      field2dTable.getProtobufTopic("trajectoryProto", Trajectory.proto).publish();
 
   /** Create a FieldSim object */
   public FieldSim() {
@@ -88,10 +94,11 @@ public class FieldSim extends SubsystemBase implements AutoCloseable {
   /**
    * Add a trajectory to be displayed in the Field2D widget.
    *
-   * @param trajectory The wpilib Trajectory to display
+   * @param trajectory The WPILib Trajectory to display
    */
   public void addTrajectory(Trajectory trajectory) {
-    m_field2D.getObject("path").setTrajectory(trajectory);
+    m_field2D.getObject("trajectory").setTrajectory(trajectory);
+    trajectoryProtoPublisher.accept(trajectory);
   }
 
   private void updateField2d() {
