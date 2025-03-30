@@ -7,6 +7,7 @@ plugins {
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id "edu.wpi.first.GradleRIO" version "2025.3.1"
     id 'com.diffplug.spotless' version '6.25.0'
+    id "io.freefair.lombok" version "8.13.1"
 }
 
 // WPILib Version
