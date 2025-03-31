@@ -1,34 +1,103 @@
 package org.team4201.codex.subsystems.interfaces;
 
+import static java.util.Map.entry;
+
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.Getter;
 
 public abstract class BaseTalonFxSubsystem<ConfigT extends BaseTalonFxSubsystem.Config>
     extends SubsystemBase {
-  protected final ConfigT config;
+  @Getter protected final ConfigT defaultConfig;
+  @Getter protected ConfigT config;
+  @Getter protected final TalonFX[] motors;
 
-  protected final TalonFX[] motors;
+  private final Map<String, StatusSignal<?>> signalMap = new HashMap<>();
+  private final Map<String, String> loggedSignals =
+      Map.ofEntries(
+          entry("voltageOutput", "getMotorVoltage"),
+          entry("position", "getPosition"),
+          entry("velocity", "getVelocity"),
+          entry("acceleration", "getAcceleration"));
 
   public BaseTalonFxSubsystem(ConfigT config) {
-    this.config = config;
-    motors = new TalonFX[] {new TalonFX(0)};
+    defaultConfig = config;
+    config = defaultConfig;
+    motors = config.motors;
+
+    if (!validateConfiguration()) {
+      throw new IllegalArgumentException(
+          "[ERROR] Detected invalid configuration for BaseTalonFxSubsystem!");
+    }
 
     configureBaseTalonFxSubsystem();
   }
 
-  protected void configureBaseTalonFxSubsystem() {}
+  protected void configureBaseTalonFxSubsystem() {
+    for (int i = 0; i < motors.length; i++) {
+      var signalPrefix = motors.length == 1 ? "" : "TalonFX" + i + "_";
+
+      for (var loggedSignal : loggedSignals.entrySet()) {
+        try {
+          var statusSignal =
+              (StatusSignal<?>)
+                  motors[0].getClass().getMethod(loggedSignal.getValue()).invoke(motors[0]);
+          signalMap.put(signalPrefix + loggedSignal.getValue(), statusSignal);
+        } catch (NoSuchMethodException e) {
+          System.out.printf(
+              "[WARN] TalonFX.%s() is not a valid function!\n", loggedSignal.getValue());
+        } catch (InvocationTargetException e) {
+          System.out.printf(
+              "[ERROR] TalonFX.%s() threw an exception!\n%s\n",
+              loggedSignal.getValue(), e.getCause());
+        } catch (IllegalAccessException e) {
+          System.out.printf("[WARN] Illegal access TalonFX.%s()!\n", loggedSignal.getValue());
+        }
+      }
+    }
+  }
+
+  protected boolean validateConfiguration() {
+    // Check that motors were set up
+    if (config.motors.length != 0) {
+      System.out.println("[ERROR] Detected Invalid Motor Setup!");
+      return false;
+    }
+    // Check if the motors equals the DCMotor gearbox
+    if (!config.gearbox.equals(DCMotor.getKrakenX60(motors.length))
+        || !config.gearbox.equals(DCMotor.getKrakenX60Foc(motors.length))) {
+      //       !config.gearbox.equals(DCMotor.getKrakenX44(motors.length)) ||
+      //       !config.gearbox.equals(DCMotor.getKrakenX44Foc(motors.length))
+      System.out.println("[ERROR] Detected Invalid Motor Setup!");
+      return false;
+    }
+
+    return true;
+  }
 
   protected abstract void configureSubsystem();
 
-  public abstract boolean atPositionSetpoint();
+  public abstract boolean atSetpoint();
 
-  public abstract boolean atVelocitySetpoint();
+  protected abstract void updateValues();
+
+  @Override
+  public void periodic() {
+    updateValues();
+  }
 
   public abstract static class Config {
-    public TalonFX motors;
-    public int[] canIDs;
+    public TalonFX[] motors;
     public DCMotor gearbox;
-    public  double gearRatio = 1.0;
+    public double gearRatio = 1.0;
+  }
+
+  protected abstract static class BaseIO {
+    public double percentOutput;
   }
 }
