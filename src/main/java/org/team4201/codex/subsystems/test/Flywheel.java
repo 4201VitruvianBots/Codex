@@ -6,25 +6,29 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.MutAngularAcceleration;
+import edu.wpi.first.units.measure.MutAngularVelocity;
 import org.team4201.codex.subsystems.interfaces.RotationalTalonFxSubsystem;
 import org.team4201.codex.utils.CtreUtils;
 
+import java.util.stream.Stream;
+
 public class Flywheel
-    extends RotationalTalonFxSubsystem<AngularVelocity, AngularAcceleration, Flywheel.Config> {
+    extends RotationalTalonFxSubsystem<
+        MutAngularVelocity, MutAngularAcceleration, Flywheel.Config, Flywheel.IO> {
 
   public <ConfigT extends Flywheel.Config> Flywheel(ConfigT config) {
-    super(config);
-    this.config = config;
+    // TODO: This feels messy. It should be possible to use a generic to avoid initializing this...
+    super(config, Stream.generate(IO::new).limit(config.motors.length).toArray(IO[]::new));
   }
 
   @Override
-  protected void updateValues() {}
+  protected void updateIO() {}
 
   public static class Config
-      extends RotationalTalonFxSubsystem.Config<AngularVelocity, AngularAcceleration> {
-    public Config() {
+      extends RotationalTalonFxSubsystem.Config<MutAngularVelocity, MutAngularAcceleration> {
+    private Config() {
+      super();
       this.gearRatio = 2.5 / 1.0;
 
       CANcoder encoder = new CANcoder(0);
@@ -47,5 +51,20 @@ public class Flywheel
 
       this.motors = new TalonFX[] {motorA, motorB};
     }
+
+    public static Config getPrimaryConfig() {
+      return new Config();
+    }
+
+    public static Config getSecondaryConfig() {
+      var secondaryConfig = new Config();
+      return secondaryConfig;
+    }
+  }
+
+  public static class IO
+      extends RotationalTalonFxSubsystem.IO<MutAngularVelocity, MutAngularAcceleration> {
+
+    public IO() {}
   }
 }

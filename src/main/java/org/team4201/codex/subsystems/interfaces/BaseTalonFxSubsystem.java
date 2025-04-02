@@ -2,6 +2,7 @@ package org.team4201.codex.subsystems.interfaces;
 
 import static java.util.Map.entry;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -11,24 +12,33 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 
-public abstract class BaseTalonFxSubsystem<ConfigT extends BaseTalonFxSubsystem.Config>
+public abstract class BaseTalonFxSubsystem<
+        ConfigT extends BaseTalonFxSubsystem.Config, IoT extends BaseTalonFxSubsystem.IO>
     extends SubsystemBase {
   @Getter protected final ConfigT defaultConfig;
   @Getter protected ConfigT config;
   @Getter protected final TalonFX[] motors;
+  @Getter protected final IoT[] io;
 
   private final Map<String, StatusSignal<?>> signalMap = new HashMap<>();
   private final Map<String, String> loggedSignals =
       Map.ofEntries(
-          entry("voltageOutput", "getMotorVoltage"),
+          entry("supplyVoltage", "getSupplyVoltage"),
+          entry("motorVoltage", "getMotorVoltage"),
+          entry("supplyCurrent", "getSupplyCurrent"),
+          entry("statorCurrent", "getStatorCurrent"),
+          entry("torqueCurrent", "getTorqueCurrent"),
+          entry("percentOutput", "getDutyCycleOut"),
+          entry("setpoint", "getReference"),
           entry("position", "getPosition"),
           entry("velocity", "getVelocity"),
           entry("acceleration", "getAcceleration"));
 
-  public BaseTalonFxSubsystem(ConfigT config) {
-    defaultConfig = config;
-    config = defaultConfig;
-    motors = config.motors;
+  public BaseTalonFxSubsystem(ConfigT config, IoT[] io) {
+    this.defaultConfig = config;
+    this.config = defaultConfig;
+    this.motors = config.motors;
+    this.io = io;
 
     if (!validateConfiguration()) {
       throw new IllegalArgumentException(
@@ -39,15 +49,14 @@ public abstract class BaseTalonFxSubsystem<ConfigT extends BaseTalonFxSubsystem.
   }
 
   protected void configureBaseTalonFxSubsystem() {
-    for (int i = 0; i < motors.length; i++) {
-      var signalPrefix = motors.length == 1 ? "" : "TalonFX" + i + "_";
+    for (TalonFX motor : motors) {
+      var motorPrefix = "TalonFX" + motor.getDeviceID() + "_";
 
       for (var loggedSignal : loggedSignals.entrySet()) {
         try {
           var statusSignal =
-              (StatusSignal<?>)
-                  motors[0].getClass().getMethod(loggedSignal.getValue()).invoke(motors[0]);
-          signalMap.put(signalPrefix + loggedSignal.getValue(), statusSignal);
+              (StatusSignal<?>) motor.getClass().getMethod(loggedSignal.getValue()).invoke(motor);
+          signalMap.put(motorPrefix + loggedSignal.getValue(), statusSignal);
         } catch (NoSuchMethodException e) {
           System.out.printf(
               "[WARN] TalonFX.%s() is not a valid function!\n", loggedSignal.getValue());
@@ -63,6 +72,11 @@ public abstract class BaseTalonFxSubsystem<ConfigT extends BaseTalonFxSubsystem.
   }
 
   protected boolean validateConfiguration() {
+    // Check that the gear ratio is valid
+    if (config.gearRatio <= 0) {
+      System.out.println("[ERROR] Gear Ratio must be greater than zero!");
+      return false;
+    }
     // Check that motors were set up
     if (config.motors.length != 0) {
       System.out.println("[ERROR] Detected Invalid Motor Setup!");
@@ -84,20 +98,32 @@ public abstract class BaseTalonFxSubsystem<ConfigT extends BaseTalonFxSubsystem.
 
   public abstract boolean atSetpoint();
 
-  protected abstract void updateValues();
+  protected abstract void updateIO();
+
+  private void updateSignals() {
+    for (int i = 0; i < motors.length; i++) {
+      var motorPrefix = "TalonFX" + motors[i].getDeviceID() + "_";
+      io[i].percentOutput = signalMap.get(motorPrefix + "percentOutput").getValueAsDouble();
+      // io[i].percentOutput = signalMap.get(motorPrefix + "percentOutput").getValueAsDouble();
+    }
+  }
 
   @Override
   public void periodic() {
-    updateValues();
+    BaseStatusSignal.refreshAll(signalMap.values().toArray(new StatusSignal<?>[0]));
+    updateSignals();
+    updateIO();
   }
 
   public abstract static class Config {
-    public TalonFX[] motors;
-    public DCMotor gearbox;
-    public double gearRatio = 1.0;
+    @Getter public TalonFX[] motors;
+    @Getter public DCMotor gearbox;
+    @Getter public double gearRatio = 1.0;
+
+    protected Config() {}
   }
 
-  protected abstract static class BaseIO {
+  public abstract static class IO {
     public double percentOutput;
   }
 }

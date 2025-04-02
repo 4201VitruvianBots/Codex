@@ -2,45 +2,72 @@ package org.team4201.codex.subsystems.interfaces;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.fasterxml.jackson.databind.util.ArrayBuilders;
+import edu.wpi.first.units.measure.MutAngularAcceleration;
+import edu.wpi.first.units.measure.MutAngularVelocity;
+import org.team4201.codex.subsystems.test.Flywheel;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.stream.Stream;
 
 public abstract class RotationalTalonFxSubsystem<
-        VelocityT extends AngularVelocity,
-        AccelerationT extends AngularAcceleration,
-        ConfigT extends RotationalTalonFxSubsystem.Config<VelocityT, AccelerationT>>
-    extends BaseTalonFxSubsystem<ConfigT> {
-  private final IO<VelocityT, AccelerationT> io = new IO<>();
+        VelocityT extends MutAngularVelocity,
+        AccelerationT extends MutAngularAcceleration,
+        ConfigT extends RotationalTalonFxSubsystem.Config<VelocityT, AccelerationT>,
+        IoT extends RotationalTalonFxSubsystem.IO<VelocityT, AccelerationT>>
+    extends BaseTalonFxSubsystem<ConfigT, IoT> {
+
+  Type superclass = getClass().getGenericSuperclass();
+  ParameterizedType paramType = (ParameterizedType) superclass;
+  @SuppressWarnings("unchecked")
+  private final Class<IoT> type =  (Class<IoT>) paramType.getActualTypeArguments()[0];
 
   public RotationalTalonFxSubsystem(ConfigT config) {
-    super(config);
+    super(config, createArray(config.motors.length));
+  }
+
+  private IoT createInstance() throws Exception {
+    return type.getDeclaredConstructor().newInstance();
+  }
+
+  @SuppressWarnings("unchecked")
+  private IoT[] createArray(int size) {
+    return (IoT[]) Array.newInstance(type, size);
   }
 
   public VelocityT getSetpoint() {
-    return io.commandedSetpoint;
+    return io[0].commandedSetpoint;
   }
 
   public VelocityT getAppliedSetpoint() {
-    return io.appliedSetpoint;
+    return io[0].appliedSetpoint;
   }
 
   public void setSetpoint(VelocityT setpoint) {
-    io.commandedSetpoint = setpoint;
-    io.appliedSetpoint = io.commandedSetpoint;
+    io[0].commandedSetpoint = setpoint;
+    io[0].appliedSetpoint = io[0].commandedSetpoint;
     if (config.boundSetpoint) {
-      io.appliedSetpoint =
-          io.commandedSetpoint.gt(config.maxVelocity) ? config.maxVelocity : io.appliedSetpoint;
-      io.appliedSetpoint =
-          io.commandedSetpoint.lt(config.minVelocity) ? config.minVelocity : io.appliedSetpoint;
+      io[0].appliedSetpoint =
+          io[0].commandedSetpoint.gt(config.maxVelocity)
+              ? config.maxVelocity
+              : io[0].appliedSetpoint;
+      io[0].appliedSetpoint =
+          io[0].commandedSetpoint.lt(config.minVelocity)
+              ? config.minVelocity
+              : io[0].appliedSetpoint;
     }
   }
 
   public VelocityT getVelocity() {
-    return io.currentVelocity;
+    return io[0].currentVelocity;
   }
 
   public AccelerationT getAcceleration() {
-    return io.currentAcceleration;
+    return io[0].currentAcceleration;
   }
 
   @Override
@@ -53,10 +80,14 @@ public abstract class RotationalTalonFxSubsystem<
   }
 
   @Override
-  protected void updateValues() {}
+  protected void updateIO() {
+    // Update input values
 
-  public abstract static class Config<VelocityT, AccelerationT>
-      extends BaseTalonFxSubsystem.Config {
+    // Update command values
+    // io.currentControlRequest;
+  }
+
+  public static class Config<VelocityT, AccelerationT> extends BaseTalonFxSubsystem.Config {
     public final BaseSubsystemUtils.SUBSYSTEM_TYPE subsystemType =
         BaseSubsystemUtils.SUBSYSTEM_TYPE.VELOCITY;
 
@@ -67,12 +98,17 @@ public abstract class RotationalTalonFxSubsystem<
     public AccelerationT maxAcceleration;
 
     public VelocityT velocitySetpointThreshold;
+
+    protected Config() {
+      super();
+    }
   }
 
-  private static class IO<VelocityT, AccelerationT> extends BaseTalonFxSubsystem.BaseIO {
+  public static class IO<VelocityT, AccelerationT> extends BaseTalonFxSubsystem.IO {
     public VelocityT commandedSetpoint;
     public VelocityT appliedSetpoint;
     public VelocityT currentVelocity;
     public AccelerationT currentAcceleration;
+    public ControlRequest currentControlRequest;
   }
 }
