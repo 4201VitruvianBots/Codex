@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.Supplier;
+import org.team4201.codex.robot.subsystems.SwerveSubsystem;
 
 /** Class that implements {@link SwerveSubsystem} for simulation testing */
 public class MockSwerveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>

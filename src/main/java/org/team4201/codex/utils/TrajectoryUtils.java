@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
-import org.team4201.codex.subsystems.SwerveSubsystem;
+import org.team4201.codex.robot.subsystems.SwerveSubsystem;
 
 /**
  * Utility class for working with autonomous trajectory following. Is currently designed around <a

@@ -1,4 +1,4 @@
-package org.team4201.codex.subsystems.test;
+package org.team4201.codex.robot.test;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -6,30 +6,28 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.MutAngularAcceleration;
 import edu.wpi.first.units.measure.MutAngularVelocity;
-import org.team4201.codex.subsystems.interfaces.RotationalTalonFxSubsystem;
+import org.team4201.codex.robot.subsystems.RotationalTalonFxSubsystem;
 import org.team4201.codex.utils.CtreUtils;
-
-import java.util.stream.Stream;
 
 public class Flywheel
     extends RotationalTalonFxSubsystem<
         MutAngularVelocity, MutAngularAcceleration, Flywheel.Config, Flywheel.IO> {
 
   public <ConfigT extends Flywheel.Config> Flywheel(ConfigT config) {
-    // TODO: This feels messy. It should be possible to use a generic to avoid initializing this...
-    super(config, Stream.generate(IO::new).limit(config.motors.length).toArray(IO[]::new));
+    super(config);
   }
-
-  @Override
-  protected void updateIO() {}
 
   public static class Config
       extends RotationalTalonFxSubsystem.Config<MutAngularVelocity, MutAngularAcceleration> {
     private Config() {
       super();
       this.gearRatio = 2.5 / 1.0;
+      // TODO: Fix pro check in unit test/simulation
+      //      this.gearbox = DCMotor.getKrakenX60Foc(2);
+      this.gearbox = DCMotor.getKrakenX60(2);
 
       CANcoder encoder = new CANcoder(0);
       TalonFX motorA = new TalonFX(0);
@@ -49,7 +47,7 @@ public class Flywheel
       CtreUtils.configureTalonFx(motorB, followerConfig);
       motorB.setControl(new Follower(motorA.getDeviceID(), false));
 
-      this.motors = new TalonFX[] {motorA, motorB};
+      withMotors(motorA, motorB);
     }
 
     public static Config getPrimaryConfig() {
