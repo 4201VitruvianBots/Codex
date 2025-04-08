@@ -7,21 +7,21 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.MutAngularAcceleration;
-import edu.wpi.first.units.measure.MutAngularVelocity;
 import org.team4201.codex.robot.subsystems.RotationalTalonFxSubsystem;
+import org.team4201.codex.robot.subsystems.RotationalTalonFxSubsystemInterface;
 import org.team4201.codex.utils.CtreUtils;
 
-public class Flywheel
-    extends RotationalTalonFxSubsystem<
-        MutAngularVelocity, MutAngularAcceleration, Flywheel.Config, Flywheel.IO> {
+public class Flywheel extends RotationalTalonFxSubsystem<Flywheel.Config> {
 
   public <ConfigT extends Flywheel.Config> Flywheel(ConfigT config) {
     super(config);
   }
 
-  public static class Config
-      extends RotationalTalonFxSubsystem.Config<MutAngularVelocity, MutAngularAcceleration> {
+  @Override
+  public void userPeriodic() {
+  }
+
+  public static class Config extends RotationalTalonFxSubsystemInterface.Config {
     private Config() {
       super();
       this.gearRatio = 2.5 / 1.0;
@@ -58,11 +58,5 @@ public class Flywheel
       var secondaryConfig = new Config();
       return secondaryConfig;
     }
-  }
-
-  public static class IO
-      extends RotationalTalonFxSubsystem.IO<MutAngularVelocity, MutAngularAcceleration> {
-
-    public IO() {}
   }
 }

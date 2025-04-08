@@ -72,6 +72,7 @@ public class LoggedTalonFX extends BaseDeviceInterface {
         System.out.printf("[WARN] Could not get pro license status for %s\n", deviceName);
       }
     }
+    talonfx.getIsProLicensed().setUpdateFrequency(0);
 
     supplyVoltageSignal = this.talonfx.getSupplyVoltage(false).clone();
     motorVoltageSignal = this.talonfx.getMotorVoltage(false).clone();

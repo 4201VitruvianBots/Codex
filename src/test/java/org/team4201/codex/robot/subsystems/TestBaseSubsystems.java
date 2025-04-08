@@ -1,6 +1,6 @@
 package org.team4201.codex.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -13,12 +13,22 @@ public class TestBaseSubsystems {
 
     var flywheel = new Flywheel(defaultConfig);
 
-    var test = flywheel.getAcceleration();
+    // Test common get/set functions
+    flywheel.setSetpoint(RotationsPerSecond.of(2));
+    assertEquals(flywheel.getSetpoint(), DegreesPerSecond.of(720));
 
-    var testValue = RotationsPerSecondPerSecond.of(0);
+    assertEquals(RotationsPerSecond.of(0), flywheel.getVelocity());
+    assertEquals(RotationsPerSecondPerSecond.of(0), flywheel.getAcceleration());
 
-    assertEquals(testValue, test);
+    // Variables/Functions that should not be accessible
+    //    var io = flywheel.io;
+    //    var config = flywheel.config;
+    //    var motors = flywheel.motors;
+    //    var sensors = flywheel.sensors;
+    flywheel.periodic(); // Maybe?
 
-    System.out.println("TEST");
+    //    flywheel.updateValues();
+    //    flywheel.configureBaseTalonFxSubsystem();
+    //    flywheel.validateConfiguration();
   }
 }
